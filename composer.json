@@ -1,0 +1,37 @@
+{
+  "name": "enm/json-api-server",
+  "description": "Abstract server-side php implementation of the json api specification (jsonapi.org)",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Philipp Marien",
+      "email": "marien@eosnewmedia.de"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Enm\\JsonApi\\Server\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Enm\\JsonApi\\Server\\Tests\\": "tests"
+    }
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "symfony/http-foundation": "^2.7|^3.0",
+    "enm/json-api-common": "dev-develop@dev"
+  },
+  "require-dev": {
+    "symfony/event-dispatcher": "^2.7|^3.0",
+    "phpunit/phpunit": "^6.0"
+  },
+  "suggest": {
+    "symfony/event-dispatcher": "Allows you to modify or extend functionalities of this library event based."
+  },
+  "provide": {
+    "enm/json-api-server-bundle": "^1.0"
+  }
+}
