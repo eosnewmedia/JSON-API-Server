@@ -1,5 +1,5 @@
-ENM / JSON API Server (PHP Library)
-=====================================
+JSON API Server
+===============
 [![Build Status](https://travis-ci.org/eosnewmedia/JSON-API-Server.svg?branch=master)](https://travis-ci.org/eosnewmedia/JSON-API-Server)
 
 Abstract server-side php implementation of the [json api specification](http://jsonapi.org/format/), based on the symfony http foundation component.
