@@ -61,12 +61,12 @@ This section will show you the basics you will need to use this library.
 *****
 
 ## Providers
-The enm/json-api make use of resource providers, which are responsible to provide resource objects.
+The implementation make use of resource providers, which are responsible to provide resource objects.
 
 *****
 
 ### Resource Provider
-A resource provider is a php class which implements `Enm\JsonApi\Provider\ResourceProviderInterface`.
+A resource provider is a php class which implements `Enm\JsonApi\Server\Provider\ResourceProviderInterface`.
 
 Every time json api is requested, internally the given resource provider will be called.
 
