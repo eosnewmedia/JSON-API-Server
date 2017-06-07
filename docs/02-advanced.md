@@ -161,8 +161,6 @@ To use the event system the library requires you to install the symfony event di
 After installing it via composer, you have configure your json api instance:
 
     $eventDispatcher = new Symfony\Component\EventDispatcher\EventDispatcher()
-    //@todo add your listeners or subscripbers
-    
     $jsonApi->setEventDispatcher($eventDispatcher);
 
 
