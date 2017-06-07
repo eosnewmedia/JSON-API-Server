@@ -28,7 +28,8 @@ This section will show you the basics you will need to use this library.
                     new Enm\JsonApi\Model\Resource\JsonResource('myResources', '1', ['name' => 'test'])
                 ]
             )
-        )
+        ),
+        'myResources'
     );
     
     $jsonApi = new JsonApi($registry);
@@ -80,7 +81,6 @@ The following methods must be implemented by the resource provider:
 | createResource(SaveResourceInterface $request)                                            | ResourceInterface     | Create a new resource.                                                |
 | patchResource(SaveResourceInterface $request)                                             | ResourceInterface     | Patch a resource.                                                     |
 | deleteResource(string $type, string $id)                                                  | int                   | Delete a resource identified by type and id. Return the http status.  |
-| getSupportedTypes()                                                                       | array                 | Return all types which are handled by this provider.                  |
 
 *****
 
@@ -89,14 +89,14 @@ If you want to use multiple providers you should use the `Enm\JsonApi\Server\Pro
 
     $registry = new Enm\JsonApi\Server\Provider\ResourceProviderRegistry();
     
-    $registry->add(new CustomProviderA());
-    $registry->add(new CustomProviderB());
+    $registry->add(new CustomProviderA(), 'typeA');
+    $registry->add(new CustomProviderB(), 'typeB');
 
 *****
 
 #### Resource Provider Registry Aware
 If your resource providers are implementing `Enm\JsonApi\Server\Provider\ResourceProviderRegistryAwareInterface`, the `ResourceProviderRegistry`
-will inject it self into your provider if you call `ResourceProviderRegistry::addProvider()`.
+will inject it self into your provider when calling `addProvider()` of the registry.
 
 This allows you to use other resource providers for different types in your custom provider, for example to build relations.
 

@@ -13,11 +13,11 @@ interface ResourceProviderRegistryInterface
 {
     /**
      * @param ResourceProviderInterface $provider
+     * @param string $type
      *
      * @return ResourceProviderRegistryInterface
-     * @throws \InvalidArgumentException
      */
-    public function addProvider(ResourceProviderInterface $provider): ResourceProviderRegistryInterface;
+    public function addProvider(ResourceProviderInterface $provider, string $type): ResourceProviderRegistryInterface;
 
     /**
      * @param string $type

@@ -6,6 +6,7 @@ namespace Enm\JsonApi\Server\Tests\Provider;
 use Enm\JsonApi\Server\Model\Request\FetchInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Provider\AbstractImmutableResourceProvider;
+use Enm\JsonApi\Server\Provider\ResourceProviderRegistryInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -42,12 +43,10 @@ class TestProvider extends AbstractImmutableResourceProvider
     }
 
     /**
-     * Returns an array of types which are supported by this provider
-     *
-     * @return array
+     * @return ResourceProviderRegistryInterface
      */
-    public function getSupportedTypes(): array
+    public function getProviderRegistry(): ResourceProviderRegistryInterface
     {
-        return ['tests'];
+        return $this->providerRegistry();
     }
 }

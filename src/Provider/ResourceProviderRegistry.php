@@ -21,21 +21,22 @@ class ResourceProviderRegistry implements ResourceProviderInterface, ResourcePro
 
     /**
      * @param ResourceProviderInterface $provider
+     * @param string $type
      *
      * @return ResourceProviderRegistryInterface
-     * @throws \InvalidArgumentException
+     * @throws \Exception
      */
-    public function addProvider(ResourceProviderInterface $provider): ResourceProviderRegistryInterface
+    public function addProvider(ResourceProviderInterface $provider, string $type): ResourceProviderRegistryInterface
     {
-        foreach ($provider->getSupportedTypes() as $type) {
-            if (in_array($type, $this->getSupportedTypes(), true)) {
-                throw new \InvalidArgumentException('Duplicated resource provider for "' . $type . '"');
-            }
-            if ($provider instanceof ResourceProviderRegistryAwareInterface) {
-                $provider->setProviderRegistry($this);
-            }
-            $this->providers[$type] = $provider;
+        if ($this->hasProvider($type)) {
+            throw new \LogicException('Multiple resource providers for "' . $type . '"');
         }
+
+        if ($provider instanceof ResourceProviderRegistryAwareInterface) {
+            $provider->setProviderRegistry($this);
+        }
+
+        $this->providers[$type] = $provider;
 
         return $this;
     }
@@ -98,16 +99,6 @@ class ResourceProviderRegistry implements ResourceProviderInterface, ResourcePro
     }
 
     /**
-     * Returns an array of types which are supported by this provider
-     *
-     * @return array
-     */
-    public function getSupportedTypes(): array
-    {
-        return array_keys($this->providers);
-    }
-
-    /**
      * @param string $type
      * @param string $id
      * @param FetchInterface $request
@@ -133,10 +124,19 @@ class ResourceProviderRegistry implements ResourceProviderInterface, ResourcePro
      */
     public function provider(string $type): ResourceProviderInterface
     {
-        if (!array_key_exists($type, $this->providers)) {
+        if (!$this->hasProvider($type)) {
             throw new UnsupportedTypeException($type);
         }
 
         return $this->providers[$type];
+    }
+
+    /**
+     * @param string $type
+     * @return bool
+     */
+    protected function hasProvider(string $type): bool
+    {
+        return array_key_exists($type, $this->providers);
     }
 }
