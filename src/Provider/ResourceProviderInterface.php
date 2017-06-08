@@ -76,11 +76,4 @@ interface ResourceProviderInterface
      * @return int http status code (200|202|204)
      */
     public function deleteResource(string $type, string $id): int;
-
-    /**
-     * Returns an array of types which are supported by this provider
-     *
-     * @return array
-     */
-    public function getSupportedTypes(): array;
 }

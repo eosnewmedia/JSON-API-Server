@@ -22,7 +22,7 @@
   "minimum-stability": "stable",
   "require": {
     "symfony/http-foundation": "^2.7|^3.0",
-    "enm/json-api-common": "dev-develop@dev"
+    "enm/json-api-common": "^1.0"
   },
   "require-dev": {
     "symfony/event-dispatcher": "^2.7|^3.0",

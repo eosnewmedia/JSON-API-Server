@@ -113,20 +113,4 @@ class ResourceCollectionProvider extends AbstractResourceProvider
     {
         throw new InvalidRequestException('Deleting resources of type "' . $type . '" is not allowed');
     }
-
-    /**
-     * Returns an array of types which are supported by this provider
-     *
-     * @return array
-     */
-    public function getSupportedTypes(): array
-    {
-        $types = [];
-
-        foreach ($this->resources()->all() as $resource) {
-            $types[] = $resource->getType();
-        }
-
-        return array_unique($types);
-    }
 }

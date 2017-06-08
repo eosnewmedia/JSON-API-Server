@@ -3,9 +3,13 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\Provider;
 
+use Enm\JsonApi\Exception\HttpException;
+use Enm\JsonApi\Exception\InvalidRequestException;
+use Enm\JsonApi\Model\Common\KeyValueCollectionInterface;
 use Enm\JsonApi\Server\Model\Request\FetchInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Provider\AbstractImmutableResourceProvider;
+use Enm\JsonApi\Server\Provider\ResourceProviderRegistryInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -24,7 +28,7 @@ class TestProvider extends AbstractImmutableResourceProvider
      */
     public function findResource(string $type, string $id, FetchInterface $request): ResourceInterface
     {
-        throw new \RuntimeException();
+        throw $this->createResourceNotFoundException($type, $id);
     }
 
     /**
@@ -38,16 +42,38 @@ class TestProvider extends AbstractImmutableResourceProvider
      */
     public function findResources(string $type, FetchInterface $request): array
     {
-        throw new \RuntimeException();
+        throw $this->createUnsupportedTypeException($type);
     }
 
     /**
-     * Returns an array of types which are supported by this provider
-     *
-     * @return array
+     * @return ResourceProviderRegistryInterface
      */
-    public function getSupportedTypes(): array
+    public function getProviderRegistry(): ResourceProviderRegistryInterface
     {
-        return ['tests'];
+        return $this->providerRegistry();
+    }
+
+    /**
+     * @return KeyValueCollectionInterface
+     */
+    public function executeCreateKeyValueCollection(): KeyValueCollectionInterface
+    {
+        return $this->createKeyValueCollection();
+    }
+
+    /**
+     * @return InvalidRequestException
+     */
+    public function executeCreateInvalidRequestException(): InvalidRequestException
+    {
+        return $this->createInvalidRequestException('Test');
+    }
+
+    /**
+     * @return HttpException
+     */
+    public function executeCreateHttpException(): HttpException
+    {
+        return $this->createHttpException(200, 'OK');
     }
 }

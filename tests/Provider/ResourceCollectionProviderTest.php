@@ -94,17 +94,6 @@ class ResourceCollectionProviderTest extends TestCase
         $provider->findResource('tests', 'test-1', $request);
     }
 
-    public function testGetSupportedTypes()
-    {
-        $provider = new ResourceCollectionProvider($this->createResourceCollection());
-        /** @var FetchInterface $request */
-
-        $types = $provider->getSupportedTypes();
-
-        self::assertContains('tests', $types);
-        self::assertCount(1, $types);
-    }
-
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|ResourceCollectionInterface
      */

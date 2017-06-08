@@ -20,19 +20,18 @@ class ResourceProviderRegistryTest extends TestCase
     public function testAddResourceProvider()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
 
-        self::assertTrue(true);
-        self::assertArraySubset(['test'], $registry->getSupportedTypes());
+        self::assertInstanceOf(ResourceProviderInterface::class, $registry->provider('tests'));
     }
 
     public function testFindResource()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
 
         $relation = $registry->findResource(
-            'test',
+            'tests',
             '1',
             $this->createMock(FetchInterface::class)
         );
@@ -43,13 +42,13 @@ class ResourceProviderRegistryTest extends TestCase
     public function testFindRelationship()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
 
         $relation = $registry->findRelationship(
-            'test',
+            'tests',
             '1',
             $this->createMock(FetchInterface::class),
-            'test'
+            'tests'
         );
 
         self::assertInstanceOf(RelationshipInterface::class, $relation);
@@ -62,25 +61,25 @@ class ResourceProviderRegistryTest extends TestCase
     {
         $registry = new ResourceProviderRegistry();
         $registry->findResources(
-            'test',
+            'tests',
             $this->createMock(FetchInterface::class)
         );
     }
 
     /**
-     * @expectedException \InvalidArgumentException
+     * @expectedException \LogicException
      */
     public function testNotAllowedOverwriteResourceProvider()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
+        $registry->addProvider($this->createProvider(), 'tests');
     }
 
     public function testCreateResource()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
 
         $resource = $registry->createResource(
             $this->createConfiguredMock(
@@ -88,7 +87,7 @@ class ResourceProviderRegistryTest extends TestCase
                 [
                     'resource' => $this->createConfiguredMock(
                         ResourceInterface::class,
-                        ['getType' => 'test']
+                        ['getType' => 'tests']
                     )
                 ]
             )
@@ -100,7 +99,7 @@ class ResourceProviderRegistryTest extends TestCase
     public function testPathResource()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
 
         $resource = $registry->patchResource(
             $this->createConfiguredMock(
@@ -108,7 +107,7 @@ class ResourceProviderRegistryTest extends TestCase
                 [
                     'resource' => $this->createConfiguredMock(
                         ResourceInterface::class,
-                        ['getType' => 'test']
+                        ['getType' => 'tests']
                     )
                 ]
             )
@@ -120,22 +119,17 @@ class ResourceProviderRegistryTest extends TestCase
     public function testDeleteResource()
     {
         $registry = new ResourceProviderRegistry();
-        $registry->addProvider($this->createProvider());
+        $registry->addProvider($this->createProvider(), 'tests');
 
-        self::assertEquals(0,$registry->deleteResource('test', 'test-1'));
+        self::assertEquals(0, $registry->deleteResource('tests', 'test-1'));
     }
 
     /**
      * @return ResourceProviderInterface
      */
-    protected function createProvider()
+    protected function createProvider(): ResourceProviderInterface
     {
-        return $this->createConfiguredMock(
-            ResourceProviderInterface::class,
-            [
-                'getSupportedTypes' => ['test'],
-            ]
-        );
+        return $this->createMock(ResourceProviderInterface::class);
     }
 
     public function testProviderRegistryAware()
@@ -143,8 +137,8 @@ class ResourceProviderRegistryTest extends TestCase
         $registry = new ResourceProviderRegistry();
         $provider = new TestProvider();
 
-        $registry->addProvider($provider);
-        self::assertInstanceOf(ResourceProviderRegistryInterface::class, $provider->providerRegistry());
+        $registry->addProvider($provider, 'tests');
+        self::assertInstanceOf(ResourceProviderRegistryInterface::class, $provider->getProviderRegistry());
     }
 
     /**
@@ -153,6 +147,6 @@ class ResourceProviderRegistryTest extends TestCase
     public function testInvalidProviderRegistryAware()
     {
         $provider = new TestProvider();
-        $provider->providerRegistry();
+        $provider->getProviderRegistry();
     }
 }

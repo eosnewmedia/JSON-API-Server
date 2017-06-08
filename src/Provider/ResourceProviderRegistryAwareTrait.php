@@ -30,7 +30,7 @@ trait ResourceProviderRegistryAwareTrait
      * @return ResourceProviderRegistryInterface
      * @throws \RuntimeException
      */
-    public function providerRegistry(): ResourceProviderRegistryInterface
+    protected function providerRegistry(): ResourceProviderRegistryInterface
     {
         if (!$this->providerRegistry instanceof ResourceProviderRegistryInterface) {
             throw new \RuntimeException('Missing resource provider registry!');
