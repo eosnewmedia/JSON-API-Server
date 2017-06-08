@@ -4,24 +4,28 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f9c6e10dadeeb7db7e4a24bfaf19fb04",
+    "content-hash": "24885f0649ecd75021e15999a42cad91",
     "packages": [
         {
             "name": "enm/json-api-common",
-            "version": "dev-develop",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eosnewmedia/JSON-API-Common.git",
-                "reference": "706a04e918c5c0e6d2378824d7492d172ab71a9e"
+                "reference": "b313679c5bcee536b0c71c1309200c083a03dacd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eosnewmedia/JSON-API-Common/zipball/706a04e918c5c0e6d2378824d7492d172ab71a9e",
-                "reference": "706a04e918c5c0e6d2378824d7492d172ab71a9e",
+                "url": "https://api.github.com/repos/eosnewmedia/JSON-API-Common/zipball/b313679c5bcee536b0c71c1309200c083a03dacd",
+                "reference": "b313679c5bcee536b0c71c1309200c083a03dacd",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.0"
+            },
+            "provide": {
+                "enm/json-api-client": "^1.0",
+                "enm/json-api-server": "^1.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "^6.1"
@@ -43,7 +47,7 @@
                 }
             ],
             "description": "Basic php implementation (shared structures for client and server) of the json api specification (jsonapi.org)",
-            "time": "2017-06-07 16:06:15"
+            "time": "2017-06-08T09:13:28+00:00"
         },
         {
             "name": "symfony/http-foundation",
@@ -1674,9 +1678,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "enm/json-api-common": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

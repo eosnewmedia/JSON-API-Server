@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\Provider;
 
+use Enm\JsonApi\Exception\HttpException;
+use Enm\JsonApi\Exception\InvalidRequestException;
+use Enm\JsonApi\Model\Common\KeyValueCollectionInterface;
 use Enm\JsonApi\Server\Model\Request\FetchInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Provider\AbstractImmutableResourceProvider;
@@ -25,7 +28,7 @@ class TestProvider extends AbstractImmutableResourceProvider
      */
     public function findResource(string $type, string $id, FetchInterface $request): ResourceInterface
     {
-        throw new \RuntimeException();
+        throw $this->createResourceNotFoundException($type, $id);
     }
 
     /**
@@ -39,7 +42,7 @@ class TestProvider extends AbstractImmutableResourceProvider
      */
     public function findResources(string $type, FetchInterface $request): array
     {
-        throw new \RuntimeException();
+        throw $this->createUnsupportedTypeException($type);
     }
 
     /**
@@ -48,5 +51,29 @@ class TestProvider extends AbstractImmutableResourceProvider
     public function getProviderRegistry(): ResourceProviderRegistryInterface
     {
         return $this->providerRegistry();
+    }
+
+    /**
+     * @return KeyValueCollectionInterface
+     */
+    public function executeCreateKeyValueCollection(): KeyValueCollectionInterface
+    {
+        return $this->createKeyValueCollection();
+    }
+
+    /**
+     * @return InvalidRequestException
+     */
+    public function executeCreateInvalidRequestException(): InvalidRequestException
+    {
+        return $this->createInvalidRequestException('Test');
+    }
+
+    /**
+     * @return HttpException
+     */
+    public function executeCreateHttpException(): HttpException
+    {
+        return $this->createHttpException(200, 'OK');
     }
 }
