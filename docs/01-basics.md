@@ -11,38 +11,39 @@ This section will show you the basics you will need to use this library.
 
 ## Example of Usage: 
 
-    <?php
-    /**
-     * GET /myResources
-     * will return a list of all resources of type "myResources"
-     */
-    
-    require_once('vendor/autoload.php');
-    
-    $registry = new Enm\JsonApi\Server\Provider\ResourceProviderRegistry();
-    
-    $registry->addProvider(
-        new Enm\JsonApi\Server\Provider\ResourceCollectionProvider(
-            new Enm\JsonApi\Model\Resource\JsonResourceCollection(
-                [
-                    new Enm\JsonApi\Model\Resource\JsonResource('myResources', '1', ['name' => 'test'])
-                ]
-            )
-        ),
-        'myResources'
-    );
-    
-    $jsonApi = new JsonApi($registry);
- 
-    try {
-        $response = $jsonApi->fetchResources('myResources', new FetchRequest());
-    } catch(\Exception $e){
-        $response = $jsonApi->handleError(Enm\JsonApi\Model\Error\Error::createFromException($e));
-    }
-    
-    /** @var Symfony\Component\HttpFoundation $response */
-    $response->send();
-    
+```php
+<?php
+/**
+ * GET /myResources
+ * will return a list of all resources of type "myResources"
+ */
+
+require_once('vendor/autoload.php');
+
+$registry = new Enm\JsonApi\Server\Provider\ResourceProviderRegistry();
+
+$registry->addProvider(
+    new Enm\JsonApi\Server\Provider\ResourceCollectionProvider(
+        new Enm\JsonApi\Model\Resource\JsonResourceCollection(
+            [
+                new Enm\JsonApi\Model\Resource\JsonResource('myResources', '1', ['name' => 'test'])
+            ]
+        )
+    ),
+    'myResources'
+);
+
+$jsonApi = new JsonApi($registry);
+
+try {
+    $response = $jsonApi->fetchResources('myResources', new FetchRequest());
+} catch(\Exception $e){
+    $response = $jsonApi->handleError(Enm\JsonApi\Model\Error\Error::createFromException($e));
+}
+
+/** @var Symfony\Component\HttpFoundation $response */
+$response->send();
+```
 *****
 *****
 
@@ -87,11 +88,12 @@ The following methods must be implemented by the resource provider:
 ### Multiple Resource Providers
 If you want to use multiple providers you should use the `Enm\JsonApi\Server\Provider\ResourceProviderRegistry`, which acts like a provider but forwards the request to the concrete provider.
 
-    $registry = new Enm\JsonApi\Server\Provider\ResourceProviderRegistry();
-    
-    $registry->add(new CustomProviderA(), 'typeA');
-    $registry->add(new CustomProviderB(), 'typeB');
+```php
+$registry = new Enm\JsonApi\Server\Provider\ResourceProviderRegistry();
 
+$registry->add(new CustomProviderA(), 'typeA');
+$registry->add(new CustomProviderB(), 'typeB');
+```
 *****
 
 #### Resource Provider Registry Aware
@@ -110,13 +112,16 @@ If you want json api to return error responses, you have to use objects of type 
 The simplest way is to use the default implementation `Enm\JsonApi\Model\Error\Error`, which offers a static method to create an 
 error object from an exception.
 
-    Enm\JsonApi\Model\Error\Error::createFromException(new \Exception());
-    
+```php
+Enm\JsonApi\Model\Error\Error::createFromException(new \Exception());
+```    
 Errors can contain meta informations like resources and relationships.
 
 To create a http response from an error instance simply call:
 
-        $response = $jsonApi->handleError($error);
+```php
+$response = $jsonApi->handleError($error);
+```
 
 *****
 *****

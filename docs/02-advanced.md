@@ -50,43 +50,45 @@ The "shouldContain"-Methods allows you to exclude partials of your logic from ex
 
 #### Fetch Example
 
-    // in your resource provider
-    public function findResources(string $type, FetchInterface $fetch): array {
-        $entities = $this->getYourRepository()->getEntities($type, $fetch->filters()->all());
+```php
+// in your resource provider
+public function findResources(string $type, FetchInterface $fetch): array {
+    $entities = $this->getYourRepository()->getEntities($type, $fetch->filters()->all());
+    
+    $resources = [];
+    foreach($entities as $entity){
+        $resource = new JsonResource($entity->getType(), $entity->getId());
         
-        $resources = [];
-        foreach($entities as $entity){
-            $resource = new JsonResource($entity->getType(), $entity->getId());
-            
-            if($fetch->shouldContainFullResource()){
-                if($fetch->shouldContainAttribute($entity->getType(), 'name')){
-                    $resource->attributes()->set('name', $entity->getName());
-                }
+        if($fetch->shouldContainFullResource()){
+            if($fetch->shouldContainAttribute($entity->getType(), 'name')){
+                $resource->attributes()->set('name', $entity->getName());
             }
-            
-            if($fetch->shouldContainRelationships()){
-                $related = new JsonResource($entity->getSubEntity()->getType(), $entity->getSubEntity()->getId());
-                
-                $subRequest = $fetch->subRequest('subResource');
-                
-                if($subRequest->shouldContainFullResource()){
-                    if($subRequest->shouldContainAttribute($entity->getSubEntity()->getType(), 'name')){
-                        $related->attributes()->set('name', $entity->getSubEntity()->getName());
-                    }
-                }
-                
-                if($subRequest->shouldContainRelationships()){
-                    // possible sub resources of the current sub resource...
-                }
-                
-                $resource->relationships()->setToOne('subResource', $related);
-            }
-            
-            $resources[] = $resource;
         }
         
-        return $resource;
+        if($fetch->shouldContainRelationships()){
+            $related = new JsonResource($entity->getSubEntity()->getType(), $entity->getSubEntity()->getId());
+            
+            $subRequest = $fetch->subRequest('subResource');
+            
+            if($subRequest->shouldContainFullResource()){
+                if($subRequest->shouldContainAttribute($entity->getSubEntity()->getType(), 'name')){
+                    $related->attributes()->set('name', $entity->getSubEntity()->getName());
+                }
+            }
+            
+            if($subRequest->shouldContainRelationships()){
+                // possible sub resources of the current sub resource...
+            }
+            
+            $resource->relationships()->setToOne('subResource', $related);
+        }
+        
+        $resources[] = $resource;
     }
+    
+    return $resource;
+}
+```
 
  *****
  
@@ -107,48 +109,52 @@ and `Enm\JsonApi\Server\Model\Request\PatchRequest` and should always be used.
 
 #### Create Example
 
-    // in your resource provider
-    public function createResource(SaveResourceInterface $request): ResourceInterface {
-        $resource = $request->resource();
-        
-        $entity = $this->getYourEntityFactory()->create();
-        $entity->setName($resource->attributes()->getRequired('name');
-        
+```php
+// in your resource provider
+public function createResource(SaveResourceInterface $request): ResourceInterface {
+    $resource = $request->resource();
+    
+    $entity = $this->getYourEntityFactory()->create();
+    $entity->setName($resource->attributes()->getRequired('name');
+    
+    $subEntity = $this->getYourRepository()->findOne(
+        $resource->relationships()->get('subResource')->realted()->first()->getType(),
+        $resource->relationships()->get('subResource')->realted()->first()->getId()
+    );
+    
+    $entity->setSubEntity($subEntity);
+    
+    $this->getYourRepository()->save($entity);
+    
+    return $resource->duplicate((string)$entity->getId); // return resource with custom generated (e.g. db auto increment) id
+}
+```
+
+#### Patch Example
+
+```php
+// in your resource provider
+public function patchResource(SaveResourceInterface $request): ResourceInterface {
+    $resource = $request->resource();
+    
+    $entity =$this->getYourRepository()->findOne($resource->getType(), $resource->getId());
+    $entity->setName($resource->attributes()->getOptional('name', $entity->getName()); // overwrite the name only if it's sended by the client
+    
+    // only patch relationship if client send relationship reference
+    if($resource->relationships()->has('subResource')){
         $subEntity = $this->getYourRepository()->findOne(
             $resource->relationships()->get('subResource')->realted()->first()->getType(),
             $resource->relationships()->get('subResource')->realted()->first()->getId()
         );
-        
+    
         $entity->setSubEntity($subEntity);
-        
-        $this->getYourRepository()->save($entity);
-        
-        return $resource->duplicate((string)$entity->getId); // return resource with custom generated (e.g. db auto increment) id
     }
-
-#### Patch Example
-
-    // in your resource provider
-    public function patchResource(SaveResourceInterface $request): ResourceInterface {
-        $resource = $request->resource();
-        
-        $entity =$this->getYourRepository()->findOne($resource->getType(), $resource->getId());
-        $entity->setName($resource->attributes()->getOptional('name', $entity->getName()); // overwrite the name only if it's sended by the client
-        
-        // only patch relationship if client send relationship reference
-        if($resource->relationships()->has('subResource')){
-            $subEntity = $this->getYourRepository()->findOne(
-                $resource->relationships()->get('subResource')->realted()->first()->getType(),
-                $resource->relationships()->get('subResource')->realted()->first()->getId()
-            );
-        
-            $entity->setSubEntity($subEntity);
-        }
-        
-        $this->getYourRepository()->save($entity);
-        
-        return $this->findResource($resource->getType(), $resource->getId(), $request->createFetch()); // return a full resource response after patching some values
-    }
+    
+    $this->getYourRepository()->save($entity);
+    
+    return $this->findResource($resource->getType(), $resource->getId(), $request->createFetch()); // return a full resource response after patching some values
+}
+```
 
 *****
 *****
@@ -156,12 +162,16 @@ and `Enm\JsonApi\Server\Model\Request\PatchRequest` and should always be used.
 ## Events
 To use the event system the library requires you to install the symfony event dispatcher component.
 
-    composer require symfony/event-dispatcher
+```sh
+composer require symfony/event-dispatcher
+```
 
 After installing it via composer, you have configure your json api instance:
 
-    $eventDispatcher = new Symfony\Component\EventDispatcher\EventDispatcher()
-    $jsonApi->setEventDispatcher($eventDispatcher);
+```php
+$eventDispatcher = new Symfony\Component\EventDispatcher\EventDispatcher()
+$jsonApi->setEventDispatcher($eventDispatcher);
+```
 
 
 | Event                                  | Constant                           | Object Type                                    | Description                                                                   |

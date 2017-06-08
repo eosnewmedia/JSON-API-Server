@@ -6,7 +6,9 @@ Abstract server-side php implementation of the [json api specification](http://j
 
 ## Installation
 
-    composer require enm/json-api-server
+```sh
+composer require enm/json-api-server
+```
 
 *****
 
