@@ -3,15 +3,13 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Model\Request;
 
-use Symfony\Component\HttpFoundation\Request;
+use Enm\JsonApi\Model\Request\JsonApiRequestInterface;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-interface HttpRequestInterface
+interface HttpRequestInterface extends JsonApiRequestInterface
 {
-    /**
-     * @return Request
-     */
-    public function getHttpRequest(): Request;
+    public function httpRequest(): RequestInterface;
 }
