@@ -11,7 +11,7 @@ use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-trait ImmutableResourceTrait
+trait FetchOnlyTrait
 {
     /**
      * @param SaveRequestInterface $request

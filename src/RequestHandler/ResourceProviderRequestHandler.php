@@ -86,6 +86,8 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
      */
     public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
     {
+        $request->include($request->requestedRelationship());
+
         $relationship = $this->resourceProvider($request)
             ->findResource($request)
             ->relationships()
@@ -93,7 +95,6 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
 
         if ($relationship->shouldBeHandledAsCollection()) {
             $document = $this->jsonApi()->multiResourceDocument($relationship->related()->all());
-
         } else {
             $document = $this->jsonApi()->singleResourceDocument(
                 !$relationship->related()->isEmpty() ? $relationship->related()->first() : null
