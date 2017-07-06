@@ -3,19 +3,19 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server;
 
-use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Exception\JsonApiException;
 use Enm\JsonApi\JsonApiInterface;
 use Enm\JsonApi\JsonApiTrait;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Model\Error\Error;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
-use Enm\JsonApi\Server\Model\Request\HttpRequest;
+use Enm\JsonApi\Server\Model\ExceptionTrait;
+use Enm\JsonApi\Server\Model\Request\SimpleMainRequestProvider;
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
-use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\HttpRequestInterface;
+use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequest;
-use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
@@ -32,6 +32,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 {
     use JsonApiTrait;
     use LoggerAwareTrait;
+    use ExceptionTrait;
 
     /**
      * @var RequestHandlerInterface
@@ -79,32 +80,32 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
-     * @return FetchRequestInterface
+     * @return FetchMainRequestProviderInterface
      * @throws JsonApiException
      */
-    protected function fetchRequestFromRequest(RequestInterface $request): FetchRequestInterface
+    protected function fetchRequestFromRequest(RequestInterface $request): FetchMainRequestProviderInterface
     {
         return new FetchRequest($request, true, $this->apiPrefix);
     }
 
     /**
      * @param RequestInterface $request
-     * @return SaveRequestInterface
+     * @return SaveMainRequestProviderInterface
      * @throws JsonApiException
      */
-    protected function saveRequestFromRequest(RequestInterface $request): SaveRequestInterface
+    protected function saveRequestFromRequest(RequestInterface $request): SaveMainRequestProviderInterface
     {
-        return new SaveRequest($request, $this->documentFactory(), $this->apiPrefix);
+        return new SaveRequest($request, $this->documentDeserializer(), $this->apiPrefix);
     }
 
     /**
      * @param RequestInterface $request
-     * @return HttpRequestInterface
+     * @return MainRequestProviderInterface
      * @throws JsonApiException
      */
-    protected function httpRequestFromRequest(RequestInterface $request): HttpRequestInterface
+    protected function httpRequestFromRequest(RequestInterface $request): MainRequestProviderInterface
     {
-        return new HttpRequest($request, $this->apiPrefix);
+        return new SimpleMainRequestProvider($request, $this->apiPrefix);
     }
 
     /**
@@ -117,7 +118,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
             $fetchRequest = $this->fetchRequestFromRequest($request);
 
             if ($fetchRequest->containsId()) {
-                if ($fetchRequest->requestedRelationship() !== '') {
+                if ($fetchRequest->relationship() !== '') {
 
                     $document = $this->requestHandler()->fetchRelationship($fetchRequest);
                 } else {
@@ -149,12 +150,12 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
         try {
             $saveRequest = $this->saveRequestFromRequest($request);
 
-            if ($saveRequest->containsId() && strtoupper($saveRequest->httpRequest()->getMethod()) === 'POST') {
-                throw new BadRequestException('A post request can not have an id in the path!');
+            if ($saveRequest->containsId() && strtoupper($saveRequest->mainRequest()->getMethod()) === 'POST') {
+                $this->throwBadRequest('A post request can not have an id in the path!');
             }
 
-            if (!$saveRequest->containsId() && strtoupper($saveRequest->httpRequest()->getMethod()) === 'PATCH') {
-                throw new BadRequestException('A patch request requires an id in the path!');
+            if (!$saveRequest->containsId() && strtoupper($saveRequest->mainRequest()->getMethod()) === 'PATCH') {
+                $this->throwBadRequest('A patch request requires an id in the path!');
             }
 
             $document = $this->requestHandler()->saveResource($saveRequest);
@@ -174,7 +175,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
         try {
             $httpRequest = $this->httpRequestFromRequest($request);
             if (!$httpRequest->containsId()) {
-                throw new BadRequestException('Missing the required resource id');
+                $this->throwBadRequest('Missing the required resource id');
             }
 
             $document = $this->requestHandler()->deleteResource($httpRequest);
@@ -212,13 +213,13 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param ResourceInterface $resource
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return void
      */
-    protected function normalizeResource(ResourceInterface $resource, FetchRequestInterface $request)
+    protected function normalizeResource(ResourceInterface $resource, FetchMainRequestProviderInterface $request)
     {
         foreach ($resource->attributes()->all() as $key => $value) {
-            if (!$request->shouldContainAttribute($resource->type(), $key)) {
+            if (!$request->shouldContainAttributes() || !$request->isFieldRequested($resource->type(), $key)) {
                 $resource->attributes()->remove($key);
             }
         }
@@ -227,24 +228,26 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     /**
      * @param DocumentInterface $document
      * @param ResourceInterface $resource
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      *
      * @return void
      */
     protected function includeRelated(
         DocumentInterface $document,
         ResourceInterface $resource,
-        FetchRequestInterface $request
+        FetchMainRequestProviderInterface $request
     ) {
         foreach ($resource->relationships()->all() as $relationship) {
             $shouldIncludeRelationship = $request->shouldIncludeRelationship($relationship->name());
+            $subRequest = $request->subRequest($relationship->name());
             foreach ($relationship->related()->all() as $related) {
-                if ($shouldIncludeRelationship && $document->included()->has($related->type(), $related->id())) {
-                    $this->normalizeResource($related, $request);
+                $this->normalizeResource($related, $subRequest);
+
+                if ($shouldIncludeRelationship && !$document->included()->has($related->type(), $related->id())) {
                     $document->included()->set($related);
                 }
 
-                $this->includeRelated($document, $related, $request->subRequest($relationship->name()));
+                $this->includeRelated($document, $related, $subRequest);
             }
         }
     }
@@ -260,7 +263,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
             [
                 'Content-Type' => self::CONTENT_TYPE
             ],
-            $this->hasResponseBody($document) ? $this->serializeDocument($document) : null
+            $this->hasResponseBody($document) ? json_encode($this->serializeDocument($document)) : null
         );
     }
 
@@ -270,14 +273,12 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      */
     protected function hasResponseBody(DocumentInterface $document): bool
     {
-        $statusCodes = range(300, 400);
-        $statusCodes[] = 201;
-        $statusCodes[] = 202;
-        $statusCodes[] = 204;
+        $statusCodes = [201, 202, 204, 304];
 
-        return !in_array($document->httpStatus(), $statusCodes, true) &&
-            $document->data()->isEmpty() &&
-            $document->metaInformation()->isEmpty() &&
-            $document->errors()->isEmpty();
+        return !in_array($document->httpStatus(), $statusCodes, true) && (
+                !$document->data()->isEmpty() ||
+                !$document->metaInformation()->isEmpty() ||
+                !$document->errors()->isEmpty()
+            );
     }
 }

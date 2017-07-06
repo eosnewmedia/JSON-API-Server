@@ -9,7 +9,10 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-interface HttpRequestInterface extends JsonApiRequestInterface
+interface MainRequestProviderInterface extends JsonApiRequestInterface
 {
-    public function httpRequest(): RequestInterface;
+    /**
+     * @return RequestInterface
+     */
+    public function mainRequest(): RequestInterface;
 }

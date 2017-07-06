@@ -5,8 +5,8 @@ namespace Enm\JsonApi\Server\RequestHandler;
 
 use Enm\JsonApi\Exception\NotAllowedException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\Model\Request\HttpRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -14,11 +14,11 @@ use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 trait FetchOnlyTrait
 {
     /**
-     * @param SaveRequestInterface $request
+     * @param SaveMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws NotAllowedException
      */
-    public function saveResource(SaveRequestInterface $request): DocumentInterface
+    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface
     {
         if ($request->containsId()) {
             throw new NotAllowedException('You are not allowed to patch resources of type ' . $request->type());
@@ -28,11 +28,11 @@ trait FetchOnlyTrait
     }
 
     /**
-     * @param HttpRequestInterface $request
+     * @param MainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws NotAllowedException
      */
-    public function deleteResource(HttpRequestInterface $request): DocumentInterface
+    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface
     {
         throw new NotAllowedException('You are not allowed to delete resources of type ' . $request->type());
     }

@@ -7,9 +7,9 @@ use Enm\JsonApi\Exception\UnsupportedTypeException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\JsonApiAwareInterface;
 use Enm\JsonApi\Server\JsonApiAwareTrait;
-use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\HttpRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
 use Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface;
 
 /**
@@ -36,13 +36,13 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
     }
 
     /**
-     * @param HttpRequestInterface $request
+     * @param MainRequestProviderInterface $request
      *
      * @return ResourceProviderInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    protected function resourceProvider(HttpRequestInterface $request): ResourceProviderInterface
+    protected function resourceProvider(MainRequestProviderInterface $request): ResourceProviderInterface
     {
         if (!array_key_exists($request->type(), $this->resourceProviders)) {
             throw new UnsupportedTypeException($request->type());
@@ -57,41 +57,41 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
     }
 
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws \RuntimeException
      * @throws UnsupportedTypeException
      */
-    public function fetchResource(FetchRequestInterface $request): DocumentInterface
+    public function fetchResource(FetchMainRequestProviderInterface $request): DocumentInterface
     {
         return $this->jsonApi()->singleResourceDocument($this->resourceProvider($request)->findResource($request));
     }
 
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws \RuntimeException
      * @throws UnsupportedTypeException
      */
-    public function fetchResources(FetchRequestInterface $request): DocumentInterface
+    public function fetchResources(FetchMainRequestProviderInterface $request): DocumentInterface
     {
         return $this->jsonApi()->multiResourceDocument($this->resourceProvider($request)->findResources($request));
     }
 
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws \RuntimeException
      * @throws UnsupportedTypeException
      */
-    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
+    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface
     {
-        $request->include($request->requestedRelationship());
+        $request->include($request->relationship());
 
         $relationship = $this->resourceProvider($request)
             ->findResource($request)
             ->relationships()
-            ->get($request->requestedRelationship());
+            ->get($request->relationship());
 
         if ($relationship->shouldBeHandledAsCollection()) {
             $document = $this->jsonApi()->multiResourceDocument($relationship->related()->all());
@@ -111,12 +111,12 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
     }
 
     /**
-     * @param SaveRequestInterface $request
+     * @param SaveMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws \RuntimeException
      * @throws UnsupportedTypeException
      */
-    public function saveResource(SaveRequestInterface $request): DocumentInterface
+    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface
     {
         if (!$request->containsId()) {
             return $this->jsonApi()->singleResourceDocument(
@@ -130,12 +130,12 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
     }
 
     /**
-     * @param HttpRequestInterface $request
+     * @param MainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws \RuntimeException
      * @throws UnsupportedTypeException
      */
-    public function deleteResource(HttpRequestInterface $request): DocumentInterface
+    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface
     {
         $this->resourceProvider($request)->deleteResource($request);
 

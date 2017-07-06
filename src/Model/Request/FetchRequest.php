@@ -11,14 +11,14 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements FetchRequestInterface
+class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements FetchMainRequestProviderInterface
 {
-    use HttpRequestTrait;
+    use MainRequestProviderTrait;
 
     /**
      * @var bool
      */
-    private $mainRequest;
+    private $isMainRequest;
 
     /**
      * @var string
@@ -44,17 +44,13 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
     public function __construct(RequestInterface $request, bool $mainRequest = true, string $apiPrefix = '')
     {
         try {
-            $this->httpRequest = $request;
-            $this->mainRequest = $mainRequest;
+            $this->mainRequest = $request;
+            $this->isMainRequest = $mainRequest;
             $this->apiPrefix = $apiPrefix;
 
             $this->validateContentType();
 
-            list($type, $id, $relationship, $relationshipName) = explode(
-                '/',
-                $this->getNormalizedPath()
-            );
-
+            list($type, $id, $relationship, $relationshipName) = $this->pathSegments();
             parent::__construct((string)$type, (string)$id);
 
             // parse relationship/related request
@@ -77,13 +73,13 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     public function isMainRequest(): bool
     {
-        return $this->mainRequest;
+        return $this->isMainRequest;
     }
 
     /**
      * @return string
      */
-    public function requestedRelationship(): string
+    public function relationship(): string
     {
         return $this->requestedRelationship;
     }
@@ -93,20 +89,9 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      *
      * @return bool
      */
-    public function shouldContainOnlyIdentifiers(): bool
+    public function shouldContainAttributes(): bool
     {
-        return $this->onlyIdentifiers;
-    }
-
-    /**
-     * Indicates if resources fetched by this request should provide their relationships even if their attributes are
-     * not requested (for example with sub request for "include" parameter).
-     *
-     * @return bool
-     */
-    public function shouldProvideRelationships(): bool
-    {
-        return !$this->shouldContainOnlyIdentifiers() || count($this->includes()) > 0;
+        return !$this->onlyIdentifiers;
     }
 
     /**
@@ -118,7 +103,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      *
      * @return bool
      */
-    public function shouldContainAttribute(string $type, string $name): bool
+    public function isFieldRequested(string $type, string $name): bool
     {
         if (!array_key_exists($type, $this->fields())) {
             return true;
@@ -128,22 +113,23 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
     }
 
     /**
-     * If a relationship is requested via "include" parameter, this method must
-     * return true, otherwise false. If a relationship should be included, the
-     * related resource should contain more than a resource identifier.
-     *
-     * @param string $name
+     * Indicates if resources fetched by this request should provide their relationships even if their attributes are
+     * not requested (for example with sub request for "include" parameter).
      *
      * @return bool
      */
-    public function shouldIncludeRelationship(string $name): bool
+    public function shouldContainRelationships(): bool
     {
-        return in_array($name, $this->includedRelationships, true);
+        return $this->shouldContainAttributes() || count($this->includes()) > 0;
     }
 
-    public function httpRequest(): RequestInterface
+    /**
+     * @param string $relationship
+     * @return bool
+     */
+    public function shouldIncludeRelationship(string $relationship): bool
     {
-        return $this->httpRequest;
+        return in_array($relationship, $this->includedRelationships, true);
     }
 
     /**
@@ -153,12 +139,12 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      * @param string $relationship
      * @param boolean $keepFilters
      *
-     * @return FetchRequestInterface
+     * @return FetchMainRequestProviderInterface
      * @throws \Exception
      */
-    public function subRequest(string $relationship, $keepFilters = false): FetchRequestInterface
+    public function subRequest(string $relationship, $keepFilters = false): FetchMainRequestProviderInterface
     {
-        $uri = $this->httpRequest()->getUri();
+        $uri = $this->mainRequest()->getUri();
         parse_str($uri->getQuery(), $originalQuery);
 
         $query = new KeyValueCollection($originalQuery);
@@ -166,6 +152,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         $query->remove('sort');
         $query->remove('page');
         $query->remove('filter');
+
         if ($keepFilters) {
             $query->set('filter', $this->filter()->all());
         }
@@ -182,11 +169,12 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         }
 
         $subRequest = new self(
-            $this->httpRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
+            $this->mainRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
             false,
             $this->apiPrefix
         );
 
+        $subRequest->mainRequest = $this->mainRequest();
         $subRequest->onlyIdentifiers = !$this->shouldIncludeRelationship($relationship);
 
         return $subRequest;
@@ -198,10 +186,14 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     protected function buildFromQuery()
     {
-        parse_str($this->httpRequest()->getUri()->getQuery(), $uriQuery);
+        parse_str($this->mainRequest()->getUri()->getQuery(), $uriQuery);
         $query = new KeyValueCollection($uriQuery);
 
         if ($query->has('include')) {
+            if (!is_string($query->getRequired('include'))) {
+                throw new \InvalidArgumentException('Invalid include parameter given!');
+            }
+
             $includes = explode(',', $query->getRequired('include'));
             foreach ($includes as $include) {
                 $this->include($include);
@@ -212,21 +204,42 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         }
 
         if ($query->has('fields')) {
-            foreach ((array)$query->getRequired('fields') as $type => $field) {
-                $this->field($type, $field);
+            if (!is_array($query->getRequired('fields'))) {
+                throw new \InvalidArgumentException('Invalid fields parameter given!');
+            }
+            foreach ((array)$query->getRequired('fields') as $type => $fields) {
+                foreach (explode(',', $fields) as $field) {
+                    $this->field($type, $field);
+                }
             }
         }
 
         if ($query->has('filter')) {
+            if (!is_array($query->getRequired('filter'))) {
+                throw new \InvalidArgumentException('Invalid filter parameter given!');
+            }
             $this->filter()->merge((array)$query->getRequired('filter'));
         }
 
         if ($query->has('page')) {
+            if (!is_array($query->getRequired('page'))) {
+                throw new \InvalidArgumentException('Invalid page parameter given!');
+            }
             $this->pagination()->merge((array)$query->getRequired('page'));
         }
 
         if ($query->has('sort')) {
-            $this->sorting()->merge((array)$query->getRequired('sort'));
+            if (!is_string($query->getRequired('sort'))) {
+                throw new \InvalidArgumentException('Invalid sort parameter given!');
+            }
+            foreach (explode(',', $query->getRequired('sort')) as $field) {
+                $direction = self::ORDER_ASC;
+                if (strpos($field, '-') === 0) {
+                    $field = substr($field, 1);
+                    $direction = self::ORDER_DESC;
+                }
+                $this->sorting()->set($field, $direction);
+            }
         }
     }
 }

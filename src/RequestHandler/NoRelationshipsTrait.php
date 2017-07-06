@@ -5,7 +5,7 @@ namespace Enm\JsonApi\Server\RequestHandler;
 
 use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -13,12 +13,12 @@ use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 trait NoRelationshipsTrait
 {
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws BadRequestException
      */
-    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
+    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface
     {
-        throw new BadRequestException('The requested relationship (' . $request->requestedRelationship() . ') does not exists.');
+        throw new BadRequestException('The requested relationship (' . $request->relationship() . ') does not exists.');
     }
 }

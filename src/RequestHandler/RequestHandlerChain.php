@@ -7,9 +7,9 @@ use Enm\JsonApi\Exception\UnsupportedTypeException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\JsonApiAwareInterface;
 use Enm\JsonApi\Server\JsonApiAwareTrait;
-use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\HttpRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -34,12 +34,12 @@ class RequestHandlerChain implements RequestHandlerInterface, JsonApiAwareInterf
     }
     
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchResource(FetchRequestInterface $request): DocumentInterface
+    public function fetchResource(FetchMainRequestProviderInterface $request): DocumentInterface
     {
         foreach ($this->requestHandlers as $requestHandler) {
             try {
@@ -55,12 +55,12 @@ class RequestHandlerChain implements RequestHandlerInterface, JsonApiAwareInterf
     }
 
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchResources(FetchRequestInterface $request): DocumentInterface
+    public function fetchResources(FetchMainRequestProviderInterface $request): DocumentInterface
     {
         foreach ($this->requestHandlers as $requestHandler) {
             try {
@@ -76,12 +76,12 @@ class RequestHandlerChain implements RequestHandlerInterface, JsonApiAwareInterf
     }
 
     /**
-     * @param FetchRequestInterface $request
+     * @param FetchMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
+    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface
     {
         foreach ($this->requestHandlers as $requestHandler) {
             try {
@@ -97,12 +97,12 @@ class RequestHandlerChain implements RequestHandlerInterface, JsonApiAwareInterf
     }
 
     /**
-     * @param SaveRequestInterface $request
+     * @param SaveMainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function saveResource(SaveRequestInterface $request): DocumentInterface
+    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface
     {
         foreach ($this->requestHandlers as $requestHandler) {
             try {
@@ -118,12 +118,12 @@ class RequestHandlerChain implements RequestHandlerInterface, JsonApiAwareInterf
     }
 
     /**
-     * @param HttpRequestInterface $request
+     * @param MainRequestProviderInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function deleteResource(HttpRequestInterface $request): DocumentInterface
+    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface
     {
         foreach ($this->requestHandlers as $requestHandler) {
             try {

@@ -10,9 +10,9 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class HttpRequest extends JsonApiRequest implements HttpRequestInterface
+class SimpleMainRequestProvider extends JsonApiRequest implements MainRequestProviderInterface
 {
-    use HttpRequestTrait;
+    use MainRequestProviderTrait;
 
     /**
      * @param RequestInterface $request
@@ -21,10 +21,10 @@ class HttpRequest extends JsonApiRequest implements HttpRequestInterface
      */
     public function __construct(RequestInterface $request, string $apiPrefix = '')
     {
-        $this->httpRequest = $request;
+        $this->mainRequest = $request;
         $this->apiPrefix = $apiPrefix;
 
-        list($type, $id) = explode('/', $this->getNormalizedPath());
+        list($type, $id) = $this->pathSegments();
 
         parent::__construct($type, $id);
     }
