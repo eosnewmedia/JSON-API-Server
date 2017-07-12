@@ -5,11 +5,12 @@ namespace Enm\JsonApi\Server\RequestHandler;
 
 use Enm\JsonApi\Exception\UnsupportedTypeException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
+use Enm\JsonApi\Model\Request\JsonApiRequestInterface;
 use Enm\JsonApi\Server\JsonApiAwareInterface;
 use Enm\JsonApi\Server\JsonApiAwareTrait;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -32,122 +33,83 @@ class RequestHandlerChain implements RequestHandlerInterface, JsonApiAwareInterf
     {
         $this->requestHandlers[] = $requestHandler;
     }
-    
+
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchResource(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchResource(FetchRequestInterface $request): DocumentInterface
+    {
+        return $this->execute('fetchResource', $request);
+    }
+
+    /**
+     * @param FetchRequestInterface $request
+     * @return DocumentInterface
+     * @throws UnsupportedTypeException
+     * @throws \RuntimeException
+     */
+    public function fetchResources(FetchRequestInterface $request): DocumentInterface
+    {
+        return $this->execute('fetchResources', $request);
+    }
+
+    /**
+     * @param FetchRequestInterface $request
+     * @return DocumentInterface
+     * @throws UnsupportedTypeException
+     * @throws \RuntimeException
+     */
+    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
+    {
+        return $this->execute('fetchRelationship', $request);
+    }
+
+    /**
+     * @param SaveRequestInterface $request
+     * @return DocumentInterface
+     * @throws UnsupportedTypeException
+     * @throws \RuntimeException
+     */
+    public function saveResource(SaveRequestInterface $request): DocumentInterface
+    {
+        return $this->execute('saveResource', $request);
+    }
+
+    /**
+     * @param AdvancedJsonApiRequestInterface $request
+     * @return DocumentInterface
+     * @throws UnsupportedTypeException
+     * @throws \RuntimeException
+     */
+    public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface
+    {
+        return $this->execute('deleteResource', $request);
+    }
+
+    /**
+     * @param string $method
+     * @param JsonApiRequestInterface $request
+     * @return DocumentInterface
+     * @throws UnsupportedTypeException
+     * @throws \RuntimeException
+     */
+    private function execute(string $method, JsonApiRequestInterface $request): DocumentInterface
     {
         foreach ($this->requestHandlers as $requestHandler) {
             try {
-                $this->configure($requestHandler);
+                if ($requestHandler instanceof JsonApiAwareInterface) {
+                    $requestHandler->setJsonApi($this->jsonApi());
+                }
 
-                return $requestHandler->fetchResource($request);
+                return $requestHandler->$method($request);
             } catch (UnsupportedTypeException $e) {
 
             }
         }
 
         throw new UnsupportedTypeException($request->type());
-    }
-
-    /**
-     * @param FetchMainRequestProviderInterface $request
-     * @return DocumentInterface
-     * @throws UnsupportedTypeException
-     * @throws \RuntimeException
-     */
-    public function fetchResources(FetchMainRequestProviderInterface $request): DocumentInterface
-    {
-        foreach ($this->requestHandlers as $requestHandler) {
-            try {
-                $this->configure($requestHandler);
-
-                return $requestHandler->fetchResources($request);
-            } catch (UnsupportedTypeException $e) {
-
-            }
-        }
-
-        throw new UnsupportedTypeException($request->type());
-    }
-
-    /**
-     * @param FetchMainRequestProviderInterface $request
-     * @return DocumentInterface
-     * @throws UnsupportedTypeException
-     * @throws \RuntimeException
-     */
-    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface
-    {
-        foreach ($this->requestHandlers as $requestHandler) {
-            try {
-                $this->configure($requestHandler);
-
-                return $requestHandler->fetchRelationship($request);
-            } catch (UnsupportedTypeException $e) {
-
-            }
-        }
-
-        throw new UnsupportedTypeException($request->type());
-    }
-
-    /**
-     * @param SaveMainRequestProviderInterface $request
-     * @return DocumentInterface
-     * @throws UnsupportedTypeException
-     * @throws \RuntimeException
-     */
-    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface
-    {
-        foreach ($this->requestHandlers as $requestHandler) {
-            try {
-                $this->configure($requestHandler);
-
-                return $requestHandler->saveResource($request);
-            } catch (UnsupportedTypeException $e) {
-
-            }
-        }
-
-        throw new UnsupportedTypeException($request->type());
-    }
-
-    /**
-     * @param MainRequestProviderInterface $request
-     * @return DocumentInterface
-     * @throws UnsupportedTypeException
-     * @throws \RuntimeException
-     */
-    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface
-    {
-        foreach ($this->requestHandlers as $requestHandler) {
-            try {
-                $this->configure($requestHandler);
-
-                return $requestHandler->deleteResource($request);
-            } catch (UnsupportedTypeException $e) {
-
-            }
-        }
-
-        throw new UnsupportedTypeException($request->type());
-    }
-
-    /**
-     * @param RequestHandlerInterface $requestHandler
-     *
-     * @return void
-     * @throws \RuntimeException
-     */
-    protected function configure(RequestHandlerInterface $requestHandler)
-    {
-        if ($requestHandler instanceof JsonApiAwareInterface) {
-            $requestHandler->setJsonApi($this->jsonApi());
-        }
     }
 }

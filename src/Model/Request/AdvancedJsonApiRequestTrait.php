@@ -10,7 +10,7 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-trait MainRequestProviderTrait
+trait AdvancedJsonApiRequestTrait
 {
 
     /**
@@ -18,12 +18,15 @@ trait MainRequestProviderTrait
      */
     private $mainRequest;
 
-    private $apiPrefix;
+    /**
+     * @var string
+     */
+    private $apiPrefix = '';
 
     /**
      * @return RequestInterface
      */
-    public function mainRequest(): RequestInterface
+    public function mainHttpRequest(): RequestInterface
     {
         return $this->mainRequest;
     }
@@ -33,7 +36,7 @@ trait MainRequestProviderTrait
      */
     protected function validateContentType()
     {
-        $contentTypeHeader = $this->mainRequest()->getHeader('Content-Type');
+        $contentTypeHeader = $this->mainHttpRequest()->getHeader('Content-Type');
 
         $isAvailable = count($contentTypeHeader) !== 0;
         if (!$isAvailable || strpos($contentTypeHeader[0], JsonApiInterface::CONTENT_TYPE) === false) {
@@ -53,7 +56,7 @@ trait MainRequestProviderTrait
             trim(
                 ltrim(
                     trim(
-                        $this->mainRequest()->getUri()->getPath(),
+                        $this->mainHttpRequest()->getUri()->getPath(),
                         '/'
                     ),
                     trim(

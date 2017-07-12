@@ -10,9 +10,9 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class SimpleMainRequestProvider extends JsonApiRequest implements MainRequestProviderInterface
+class SimpleRequest extends JsonApiRequest implements AdvancedJsonApiRequestInterface
 {
-    use MainRequestProviderTrait;
+    use AdvancedJsonApiRequestTrait;
 
     /**
      * @param RequestInterface $request

@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\ResourceProvider;
 
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 
 /**
@@ -16,43 +16,43 @@ interface ResourceProviderInterface
     /**
      * Finds a single resource by type and id
      *
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      *
      * @return ResourceInterface
      */
-    public function findResource(FetchMainRequestProviderInterface $request): ResourceInterface;
+    public function findResource(FetchRequestInterface $request): ResourceInterface;
 
     /**
      * Finds all resources of the given type
      *
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      *
      * @return ResourceInterface[]
      */
-    public function findResources(FetchMainRequestProviderInterface $request): array;
+    public function findResources(FetchRequestInterface $request): array;
 
     /**
      * Creates a single resource
      *
-     * @param SaveMainRequestProviderInterface $request
+     * @param SaveRequestInterface $request
      * @return ResourceInterface
      */
-    public function createResource(SaveMainRequestProviderInterface $request): ResourceInterface;
+    public function createResource(SaveRequestInterface $request): ResourceInterface;
 
     /**
      * Patches a single resource
      *
-     * @param SaveMainRequestProviderInterface $request
+     * @param SaveRequestInterface $request
      * @return ResourceInterface
      */
-    public function patchResource(SaveMainRequestProviderInterface $request): ResourceInterface;
+    public function patchResource(SaveRequestInterface $request): ResourceInterface;
 
     /**
      * Deletes a resource by type and id
      *
-     * @param MainRequestProviderInterface $request
+     * @param AdvancedJsonApiRequestInterface $request
      *
      * @return void
      */
-    public function deleteResource(MainRequestProviderInterface $request);
+    public function deleteResource(AdvancedJsonApiRequestInterface $request);
 }

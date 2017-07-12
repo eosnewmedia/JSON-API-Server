@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server\RequestHandler;
 
 use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -14,32 +14,32 @@ use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
 interface RequestHandlerInterface
 {
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      */
-    public function fetchResource(FetchMainRequestProviderInterface $request): DocumentInterface;
+    public function fetchResource(FetchRequestInterface $request): DocumentInterface;
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      */
-    public function fetchResources(FetchMainRequestProviderInterface $request): DocumentInterface;
+    public function fetchResources(FetchRequestInterface $request): DocumentInterface;
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      */
-    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface;
+    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface;
 
     /**
-     * @param SaveMainRequestProviderInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      */
-    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface;
+    public function saveResource(SaveRequestInterface $request): DocumentInterface;
 
     /**
-     * @param MainRequestProviderInterface $request
+     * @param AdvancedJsonApiRequestInterface $request
      * @return DocumentInterface
      */
-    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface;
+    public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface;
 }

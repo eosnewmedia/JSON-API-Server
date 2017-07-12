@@ -6,7 +6,7 @@ namespace Enm\JsonApi\Server\Model\Request;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-interface FetchMainRequestProviderInterface extends \Enm\JsonApi\Model\Request\FetchRequestInterface, MainRequestProviderInterface
+interface FetchRequestInterface extends \Enm\JsonApi\Model\Request\FetchRequestInterface, AdvancedJsonApiRequestInterface
 {
     /**
      * @return bool
@@ -59,7 +59,7 @@ interface FetchMainRequestProviderInterface extends \Enm\JsonApi\Model\Request\F
      * @param string $relationship
      * @param boolean $keepFilters
      *
-     * @return FetchMainRequestProviderInterface
+     * @return FetchRequestInterface
      */
-    public function subRequest(string $relationship, $keepFilters = false): FetchMainRequestProviderInterface;
+    public function subRequest(string $relationship, $keepFilters = false): FetchRequestInterface;
 }

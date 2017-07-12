@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server\Tests\Model\Request;
 
 use Enm\JsonApi\Serializer\Deserializer;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequest;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
@@ -33,7 +33,7 @@ class SaveRequestTest extends TestCase
         );
 
         self::assertEquals('test-1', $request->document()->data()->first()->id());
-        self::assertInstanceOf(FetchMainRequestProviderInterface::class, $request->fetch());
+        self::assertInstanceOf(FetchRequestInterface::class, $request->fetch());
     }
 
     /**

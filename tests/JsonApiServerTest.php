@@ -20,7 +20,7 @@ class JsonApiServerTest extends TestCase
     {
         $server = new JsonApiServer(new MockRequestHandler(), 'api');
 
-        $response = $server->handleFetch(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest('GET', 'http://example.com/api/tests/test-1')
         );
 
@@ -40,12 +40,106 @@ class JsonApiServerTest extends TestCase
         );
     }
 
+    public function testFetchResources()
+    {
+        $server = new JsonApiServer(new MockRequestHandler(), 'api');
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest('GET', 'http://example.com/api/tests')
+        );
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        self::assertArraySubset(
+            [
+                'data' => [
+                    [
+                        'type' => 'tests',
+                        'id' => 'tests-1',
+                        'attributes' => [
+                            'title' => 'Test'
+                        ]
+                    ]
+                ]
+            ],
+            json_decode((string)$response->getBody(), true)
+        );
+    }
+
+    public function testFetchResourcesWithInclude()
+    {
+        $server = new JsonApiServer(new MockRequestHandler(), 'api');
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest('GET', 'http://example.com/api/tests/test-1?include=examples')
+        );
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        self::assertArraySubset(
+            [
+                'data' => [
+                    'type' => 'tests',
+                    'id' => 'test-1',
+                    'attributes' => [
+                        'title' => 'Test'
+                    ]
+                ],
+                'included' => [
+                    [
+                        'type' => 'examples',
+                        'id' => 'example-1',
+                    ]
+                ]
+            ],
+            json_decode((string)$response->getBody(), true)
+        );
+    }
+
+    public function testFetchRelationship()
+    {
+        $server = new JsonApiServer(new MockRequestHandler(), 'api');
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest('GET', 'http://example.com/api/tests/test-1/examples')
+        );
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        self::assertArraySubset(
+            [
+                'data' => [
+                    [
+                        'type' => 'examples',
+                        'id' => 'examples-1',
+                        'attributes' => [
+                            'title' => 'Test examples'
+                        ]
+                    ]
+                ]
+            ],
+            json_decode((string)$response->getBody(), true)
+        );
+    }
+
     public function testFetchResourceNotFound()
     {
         $server = new JsonApiServer(new MockRequestHandler(true));
 
-        $response = $server->handleFetch(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest('GET', 'http://example.com/tests/test-1')
+        );
+
+        self::assertEquals(404, $response->getStatusCode());
+        self::assertCount(1, json_decode((string)$response->getBody(), true)['errors']);
+    }
+
+    public function testFetchUnsupportedType()
+    {
+        $server = new JsonApiServer(new MockRequestHandler(true));
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest('GET', 'http://example.com/tests')
         );
 
         self::assertEquals(404, $response->getStatusCode());
@@ -56,7 +150,7 @@ class JsonApiServerTest extends TestCase
     {
         $server = new JsonApiServer(new MockRequestHandler());
 
-        $response = $server->handleSave(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest(
                 'POST',
                 'http://example.com/tests',
@@ -76,13 +170,13 @@ class JsonApiServerTest extends TestCase
     {
         $server = new JsonApiServer(new MockRequestHandler());
 
-        $response = $server->handleSave(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest(
                 'POST',
                 'http://example.com/tests/tests-2',
                 [
                     'type' => 'tests',
-                    'id' => 'test-2'
+                    'id' => 'tests-2'
                 ]
             )
         );
@@ -94,7 +188,7 @@ class JsonApiServerTest extends TestCase
     {
         $server = new JsonApiServer(new MockRequestHandler());
 
-        $response = $server->handleSave(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest(
                 'PATCH',
                 'http://example.com/tests/test-2',
@@ -114,7 +208,7 @@ class JsonApiServerTest extends TestCase
     {
         $server = new JsonApiServer(new MockRequestHandler());
 
-        $response = $server->handleSave(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest(
                 'PATCH',
                 'http://example.com/tests',
@@ -128,12 +222,11 @@ class JsonApiServerTest extends TestCase
         self::assertEquals(400, $response->getStatusCode());
     }
 
-
     public function testDeleteResource()
     {
         $server = new JsonApiServer(new MockRequestHandler());
 
-        $response = $server->handleDelete(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest('DELETE', 'http://example.com/tests/test-1')
         );
 
@@ -145,8 +238,19 @@ class JsonApiServerTest extends TestCase
     {
         $server = new JsonApiServer(new MockRequestHandler());
 
-        $response = $server->handleDelete(
+        $response = $server->handleHttpRequest(
             $this->createHttpRequest('DELETE', 'http://example.com/tests')
+        );
+
+        self::assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testInvalidHttpMethod()
+    {
+        $server = new JsonApiServer(new MockRequestHandler());
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest('PUT', 'http://example.com/tests')
         );
 
         self::assertEquals(400, $response->getStatusCode());

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server;
 
+use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Exception\JsonApiException;
 use Enm\JsonApi\JsonApiInterface;
 use Enm\JsonApi\JsonApiTrait;
@@ -10,12 +11,12 @@ use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Model\Error\Error;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Model\ExceptionTrait;
-use Enm\JsonApi\Server\Model\Request\SimpleMainRequestProvider;
+use Enm\JsonApi\Server\Model\Request\SimpleRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequest;
-use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
@@ -69,7 +70,6 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
         return $this->logger;
     }
 
-
     /**
      * @return RequestHandlerInterface
      */
@@ -80,108 +80,52 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
-     * @return FetchMainRequestProviderInterface
+     * @return FetchRequestInterface
      * @throws JsonApiException
      */
-    protected function fetchRequestFromRequest(RequestInterface $request): FetchMainRequestProviderInterface
+    protected function fetchRequestFromHttpRequest(RequestInterface $request): FetchRequestInterface
     {
         return new FetchRequest($request, true, $this->apiPrefix);
     }
 
     /**
      * @param RequestInterface $request
-     * @return SaveMainRequestProviderInterface
+     * @return SaveRequestInterface
      * @throws JsonApiException
      */
-    protected function saveRequestFromRequest(RequestInterface $request): SaveMainRequestProviderInterface
+    protected function saveRequestFromHttpRequest(RequestInterface $request): SaveRequestInterface
     {
         return new SaveRequest($request, $this->documentDeserializer(), $this->apiPrefix);
     }
 
     /**
      * @param RequestInterface $request
-     * @return MainRequestProviderInterface
+     * @return AdvancedJsonApiRequestInterface
      * @throws JsonApiException
      */
-    protected function httpRequestFromRequest(RequestInterface $request): MainRequestProviderInterface
+    protected function apiRequestFromHttpRequest(RequestInterface $request): AdvancedJsonApiRequestInterface
     {
-        return new SimpleMainRequestProvider($request, $this->apiPrefix);
+        return new SimpleRequest($request, $this->apiPrefix);
     }
 
-    /**
-     * @param RequestInterface $request
-     * @return ResponseInterface
-     */
-    public function handleFetch(RequestInterface $request): ResponseInterface
+    public function handleHttpRequest(RequestInterface $request): ResponseInterface
     {
         try {
-            $fetchRequest = $this->fetchRequestFromRequest($request);
+            switch (strtoupper($request->getMethod())) {
+                case 'GET':
+                    return $this->handleFetch($request);
 
-            if ($fetchRequest->containsId()) {
-                if ($fetchRequest->relationship() !== '') {
+                case 'POST':
+                case 'PATCH':
+                    return $this->handleSave($request);
 
-                    $document = $this->requestHandler()->fetchRelationship($fetchRequest);
-                } else {
+                case 'DELETE':
+                    return $this->handleDelete($request);
 
-                    $document = $this->requestHandler()->fetchResource($fetchRequest);
-                }
-            } else {
-                $document = $this->requestHandler()->fetchResources($fetchRequest);
+                default:
+                    throw new BadRequestException('Http method "' . $request->getMethod() . '" is not supported by json api!');
             }
-
-
-            foreach ($document->data()->all() as $resource) {
-                $this->normalizeResource($resource, $fetchRequest);
-                $this->includeRelated($document, $resource, $fetchRequest);
-            }
-
-            return $this->respondWith($document);
-        } catch (JsonApiException $e) {
-            return $this->handleException($e);
-        }
-    }
-
-    /**
-     * @param RequestInterface $request
-     * @return ResponseInterface
-     */
-    public function handleSave(RequestInterface $request): ResponseInterface
-    {
-        try {
-            $saveRequest = $this->saveRequestFromRequest($request);
-
-            if ($saveRequest->containsId() && strtoupper($saveRequest->mainRequest()->getMethod()) === 'POST') {
-                $this->throwBadRequest('A post request can not have an id in the path!');
-            }
-
-            if (!$saveRequest->containsId() && strtoupper($saveRequest->mainRequest()->getMethod()) === 'PATCH') {
-                $this->throwBadRequest('A patch request requires an id in the path!');
-            }
-
-            $document = $this->requestHandler()->saveResource($saveRequest);
-
-            return $this->respondWith($document);
-        } catch (JsonApiException $e) {
-            return $this->handleException($e);
-        }
-    }
-
-    /**
-     * @param RequestInterface $request
-     * @return ResponseInterface
-     */
-    public function handleDelete(RequestInterface $request): ResponseInterface
-    {
-        try {
-            $httpRequest = $this->httpRequestFromRequest($request);
-            if (!$httpRequest->containsId()) {
-                $this->throwBadRequest('Missing the required resource id');
-            }
-
-            $document = $this->requestHandler()->deleteResource($httpRequest);
-
-            return $this->respondWith($document);
-        } catch (JsonApiException $e) {
+        } catch (\Exception $e) {
             return $this->handleException($e);
         }
     }
@@ -212,11 +156,80 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     }
 
     /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     * @throws JsonApiException
+     */
+    protected function handleFetch(RequestInterface $request): ResponseInterface
+    {
+        $fetchRequest = $this->fetchRequestFromHttpRequest($request);
+
+        if ($fetchRequest->containsId()) {
+            if ($fetchRequest->relationship() !== '') {
+
+                $document = $this->requestHandler()->fetchRelationship($fetchRequest);
+            } else {
+
+                $document = $this->requestHandler()->fetchResource($fetchRequest);
+            }
+        } else {
+            $document = $this->requestHandler()->fetchResources($fetchRequest);
+        }
+
+
+        foreach ($document->data()->all() as $resource) {
+            $this->normalizeResource($resource, $fetchRequest);
+            $this->includeRelated($document, $resource, $fetchRequest);
+        }
+
+        return $this->respondWith($document);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     * @throws JsonApiException
+     */
+    protected function handleSave(RequestInterface $request): ResponseInterface
+    {
+        $saveRequest = $this->saveRequestFromHttpRequest($request);
+
+        if ($saveRequest->containsId() && strtoupper($request->getMethod()) === 'POST') {
+            $this->throwBadRequest('A patch request requires the http method "patch"!');
+        }
+
+        if (!$saveRequest->containsId() && strtoupper($request->getMethod()) === 'PATCH') {
+            $this->throwBadRequest('A create request requires the http method "post"!');
+        }
+
+        $document = $this->requestHandler()->saveResource($saveRequest);
+
+        return $this->respondWith($document);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     * @throws JsonApiException
+     */
+    protected function handleDelete(RequestInterface $request): ResponseInterface
+    {
+        $httpRequest = $this->apiRequestFromHttpRequest($request);
+        if (!$httpRequest->containsId()) {
+            $this->throwBadRequest('Missing the required resource id');
+        }
+
+        $document = $this->requestHandler()->deleteResource($httpRequest);
+
+        return $this->respondWith($document);
+    }
+
+    /**
      * @param ResourceInterface $resource
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return void
      */
-    protected function normalizeResource(ResourceInterface $resource, FetchMainRequestProviderInterface $request)
+    protected function normalizeResource(ResourceInterface $resource, FetchRequestInterface $request)
     {
         foreach ($resource->attributes()->all() as $key => $value) {
             if (!$request->shouldContainAttributes() || !$request->isFieldRequested($resource->type(), $key)) {
@@ -228,14 +241,14 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     /**
      * @param DocumentInterface $document
      * @param ResourceInterface $resource
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      *
      * @return void
      */
     protected function includeRelated(
         DocumentInterface $document,
         ResourceInterface $resource,
-        FetchMainRequestProviderInterface $request
+        FetchRequestInterface $request
     ) {
         foreach ($resource->relationships()->all() as $relationship) {
             $shouldIncludeRelationship = $request->shouldIncludeRelationship($relationship->name());

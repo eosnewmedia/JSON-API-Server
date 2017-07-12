@@ -8,9 +8,9 @@ use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Model\Request\JsonApiRequestInterface;
 use Enm\JsonApi\Server\JsonApiAwareInterface;
 use Enm\JsonApi\Server\JsonApiAwareTrait;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -36,56 +36,56 @@ class RequestHandlerRegistry implements RequestHandlerInterface, JsonApiAwareInt
     }
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchResource(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchResource(FetchRequestInterface $request): DocumentInterface
     {
         return $this->requestHandler($request)->fetchResource($request);
     }
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchResources(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchResources(FetchRequestInterface $request): DocumentInterface
     {
         return $this->requestHandler($request)->fetchResources($request);
     }
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
     {
         return $this->requestHandler($request)->fetchRelationship($request);
     }
 
     /**
-     * @param SaveMainRequestProviderInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface
+    public function saveResource(SaveRequestInterface $request): DocumentInterface
     {
         return $this->requestHandler($request)->saveResource($request);
     }
 
     /**
-     * @param MainRequestProviderInterface $request
+     * @param AdvancedJsonApiRequestInterface $request
      * @return DocumentInterface
      * @throws UnsupportedTypeException
      * @throws \RuntimeException
      */
-    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface
+    public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface
     {
         return $this->requestHandler($request)->deleteResource($request);
     }

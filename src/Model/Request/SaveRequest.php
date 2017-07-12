@@ -11,9 +11,9 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements SaveMainRequestProviderInterface
+class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements SaveRequestInterface
 {
-    use MainRequestProviderTrait;
+    use AdvancedJsonApiRequestTrait;
 
     /**
      * @param RequestInterface $request
@@ -42,9 +42,6 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
 
         parent::__construct($document, $id);
 
-        if ($id !== '' && $document->data()->first()->id() !== $id) {
-            throw new BadRequestException('Requested resource id does not match given resource id!');
-        }
         if ($document->data()->first()->type() !== $type) {
             throw new BadRequestException('Requested resource type does not match given resource type!');
         }
@@ -53,11 +50,11 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
     /**
      * Create a new fetch request from current request
      *
-     * @return FetchMainRequestProviderInterface
+     * @return FetchRequestInterface
      * @throws JsonApiException
      */
-    public function fetch(): FetchMainRequestProviderInterface
+    public function fetch(): FetchRequestInterface
     {
-        return new FetchRequest($this->mainRequest(), false, $this->apiPrefix);
+        return new FetchRequest($this->mainHttpRequest(), false, $this->apiPrefix);
     }
 }

@@ -11,9 +11,9 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements FetchMainRequestProviderInterface
+class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements FetchRequestInterface
 {
-    use MainRequestProviderTrait;
+    use AdvancedJsonApiRequestTrait;
 
     /**
      * @var bool
@@ -139,12 +139,12 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      * @param string $relationship
      * @param boolean $keepFilters
      *
-     * @return FetchMainRequestProviderInterface
+     * @return FetchRequestInterface
      * @throws \Exception
      */
-    public function subRequest(string $relationship, $keepFilters = false): FetchMainRequestProviderInterface
+    public function subRequest(string $relationship, $keepFilters = false): FetchRequestInterface
     {
-        $uri = $this->mainRequest()->getUri();
+        $uri = $this->mainHttpRequest()->getUri();
         parse_str($uri->getQuery(), $originalQuery);
 
         $query = new KeyValueCollection($originalQuery);
@@ -169,12 +169,12 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         }
 
         $subRequest = new self(
-            $this->mainRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
+            $this->mainHttpRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
             false,
             $this->apiPrefix
         );
 
-        $subRequest->mainRequest = $this->mainRequest();
+        $subRequest->mainRequest = $this->mainHttpRequest();
         $subRequest->onlyIdentifiers = !$this->shouldIncludeRelationship($relationship);
 
         return $subRequest;
@@ -186,7 +186,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     protected function buildFromQuery()
     {
-        parse_str($this->mainRequest()->getUri()->getQuery(), $uriQuery);
+        parse_str($this->mainHttpRequest()->getUri()->getQuery(), $uriQuery);
         $query = new KeyValueCollection($uriQuery);
 
         if ($query->has('include')) {

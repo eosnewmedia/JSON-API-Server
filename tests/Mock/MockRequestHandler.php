@@ -8,9 +8,9 @@ use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\JsonApiAwareInterface;
 use Enm\JsonApi\Server\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\ExceptionTrait;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\MainRequestProviderInterface;
-use Enm\JsonApi\Server\Model\Request\SaveMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 
 /**
@@ -35,12 +35,12 @@ class MockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterfa
     }
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      *
      * @throws ResourceNotFoundException
      */
-    public function fetchResource(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchResource(FetchRequestInterface $request): DocumentInterface
     {
         if ($this->exception) {
             $this->throwResourceNotFound($request->type(), $request->id());
@@ -49,20 +49,30 @@ class MockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterfa
         $resource = $this->jsonApi()->resource($request->type(), $request->id());
         $resource->attributes()->set('title', 'Test');
 
+
+        $resource->relationships()->set(
+            $this->jsonApi()->toManyRelationship(
+                'examples',
+                [
+                    $this->jsonApi()->resource('examples', 'example-1')
+                ]
+            )
+        );
+
         return $this->jsonApi()->singleResourceDocument($resource);
     }
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      */
-    public function fetchResources(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchResources(FetchRequestInterface $request): DocumentInterface
     {
         if ($this->exception) {
             $this->throwUnsupportedType($request->type());
         }
 
-        $resource = $this->jsonApi()->resource($request->type(), $request->id());
+        $resource = $this->jsonApi()->resource($request->type(), $request->type() . '-1');
         $resource->attributes()->set('title', 'Test');
         $resource->attributes()->set('description', 'Lorem Ipsum');
 
@@ -70,27 +80,31 @@ class MockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterfa
     }
 
     /**
-     * @param FetchMainRequestProviderInterface $request
+     * @param FetchRequestInterface $request
      * @return DocumentInterface
      */
-    public function fetchRelationship(FetchMainRequestProviderInterface $request): DocumentInterface
+    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
     {
+        $resource = $this->jsonApi()->resource($request->relationship(), $request->relationship() . '-1');
+        $resource->attributes()->set('title', 'Test ' . $request->relationship());
+
+        return $this->jsonApi()->multiResourceDocument([$resource]);
     }
 
     /**
-     * @param SaveMainRequestProviderInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      */
-    public function saveResource(SaveMainRequestProviderInterface $request): DocumentInterface
+    public function saveResource(SaveRequestInterface $request): DocumentInterface
     {
         return $this->jsonApi()->singleResourceDocument($request->document()->data()->first());
     }
 
     /**
-     * @param MainRequestProviderInterface $request
+     * @param AdvancedJsonApiRequestInterface $request
      * @return DocumentInterface
      */
-    public function deleteResource(MainRequestProviderInterface $request): DocumentInterface
+    public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface
     {
         return $this->jsonApi()->singleResourceDocument()->withHttpStatus(204);
     }

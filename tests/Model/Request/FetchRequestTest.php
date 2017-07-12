@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server\Tests\Model\Request;
 
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
-use Enm\JsonApi\Server\Model\Request\FetchMainRequestProviderInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
@@ -151,8 +151,8 @@ class FetchRequestTest extends TestCase
 
         self::assertArraySubset(
             [
-                'example' => FetchMainRequestProviderInterface::ORDER_ASC,
-                'test' => FetchMainRequestProviderInterface::ORDER_DESC,
+                'example' => FetchRequestInterface::ORDER_ASC,
+                'test' => FetchRequestInterface::ORDER_DESC,
             ],
             $request->sorting()->all()
         );
