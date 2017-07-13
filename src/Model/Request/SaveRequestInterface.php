@@ -11,7 +11,9 @@ interface SaveRequestInterface extends \Enm\JsonApi\Model\Request\SaveRequestInt
     /**
      * Create a new fetch request from current request
      *
+     * @param string $id
+     *
      * @return FetchRequestInterface
      */
-    public function fetch(): FetchRequestInterface;
+    public function fetch(string $id = ''): FetchRequestInterface;
 }

@@ -41,6 +41,74 @@ class SaveRequestTest extends TestCase
         self::assertInstanceOf(FetchRequestInterface::class, $request->fetch());
     }
 
+    public function testCreateRequest()
+    {
+        /** @var DocumentDeserializerInterface $deserializer */
+        $deserializer = $this->createDeserializer();
+
+        $request = new SaveRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests',
+                [
+                    'type' => 'tests',
+                    'id' => 'test-1',
+                    'attributes' => [
+                        'title' => 'Lorem Ipsum'
+                    ]
+                ]
+            ), $deserializer
+        );
+
+        self::assertInstanceOf(FetchRequestInterface::class, $request->fetch('test-1'));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCreateRequestFetchWithoutId()
+    {
+        /** @var DocumentDeserializerInterface $deserializer */
+        $deserializer = $this->createDeserializer();
+
+        $request = new SaveRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests',
+                [
+                    'type' => 'tests',
+                    'attributes' => [
+                        'title' => 'Lorem Ipsum'
+                    ]
+                ]
+            ), $deserializer
+        );
+
+        $request->fetch();
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSaveRequestFetchWithInvalidId()
+    {
+        /** @var DocumentDeserializerInterface $deserializer */
+        $deserializer = $this->createDeserializer();
+
+        $request = new SaveRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests/test-1',
+                [
+                    'type' => 'tests',
+                    'id' => 'test-1',
+                    'attributes' => [
+                        'title' => 'Lorem Ipsum'
+                    ]
+                ]
+            ), $deserializer
+        );
+
+        $request->fetch('test-2');
+    }
+
     /**
      * @expectedException \Enm\JsonApi\Exception\BadRequestException
      */

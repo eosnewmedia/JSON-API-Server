@@ -50,11 +50,29 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
     /**
      * Create a new fetch request from current request
      *
+     * @param string $id
+     *
      * @return FetchRequestInterface
-     * @throws JsonApiException
+     * @throws JsonApiException|\InvalidArgumentException
      */
-    public function fetch(): FetchRequestInterface
+    public function fetch(string $id = ''): FetchRequestInterface
     {
+        if ($id === '' && !$this->containsId()) {
+            throw new \InvalidArgumentException('An id is required to fetch a resource!');
+        }
+
+        if ($id !== '' && $this->containsId() && $this->id() !== $id) {
+            throw new \InvalidArgumentException('Invalid id given!');
+        }
+
+        if (!$this->containsId()) {
+            $this->originalHttpRequest()->withUri(
+                $this->originalHttpRequest()->getUri()->withPath(
+                    $this->originalHttpRequest()->getUri()->getPath() . '/' . $id
+                )
+            );
+        }
+
         return new FetchRequest($this->originalHttpRequest(), false, $this->apiPrefix);
     }
 }
