@@ -5,8 +5,8 @@ namespace Enm\JsonApi\Server\RequestHandler;
 
 use Enm\JsonApi\Exception\UnsupportedTypeException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\JsonApiAwareInterface;
-use Enm\JsonApi\Server\JsonApiAwareTrait;
+use Enm\JsonApi\JsonApiAwareInterface;
+use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server\Tests\Mock;
 
 use Enm\JsonApi\Model\Resource\ResourceInterface;
-use Enm\JsonApi\Server\JsonApiAwareInterface;
-use Enm\JsonApi\Server\JsonApiAwareTrait;
+use Enm\JsonApi\JsonApiAwareInterface;
+use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;

@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\Model\Request;
 
+use Enm\JsonApi\Model\Document\DocumentInterface;
+use Enm\JsonApi\Model\Resource\ResourceCollectionInterface;
+use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Serializer\Deserializer;
+use Enm\JsonApi\Serializer\DocumentDeserializerInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequest;
 use GuzzleHttp\Psr7\Request;
@@ -18,6 +22,9 @@ class SaveRequestTest extends TestCase
 {
     public function testSaveRequest()
     {
+        /** @var DocumentDeserializerInterface $deserializer */
+        $deserializer = $this->createDeserializer();
+
         $request = new SaveRequest(
             $this->createHttpRequest(
                 'http://example.com/tests/test-1',
@@ -28,11 +35,9 @@ class SaveRequestTest extends TestCase
                         'title' => 'Lorem Ipsum'
                     ]
                 ]
-            ),
-            new Deserializer()
+            ), $deserializer
         );
 
-        self::assertEquals('test-1', $request->document()->data()->first()->id());
         self::assertInstanceOf(FetchRequestInterface::class, $request->fetch());
     }
 
@@ -41,6 +46,9 @@ class SaveRequestTest extends TestCase
      */
     public function testInvalidRequestInvalidType()
     {
+        /** @var DocumentDeserializerInterface $deserializer */
+        $deserializer = $this->createDeserializer();
+
         new SaveRequest(
             $this->createHttpRequest(
                 'http://example.com/test/test-1',
@@ -52,7 +60,7 @@ class SaveRequestTest extends TestCase
                     ]
                 ]
             ),
-            new Deserializer()
+            $deserializer
         );
     }
 
@@ -61,6 +69,9 @@ class SaveRequestTest extends TestCase
      */
     public function testInvalidRequestInvalidId()
     {
+        /** @var DocumentDeserializerInterface $deserializer */
+        $deserializer = $this->createDeserializer();
+
         new SaveRequest(
             $this->createHttpRequest(
                 'http://example.com/tests/test-2',
@@ -72,7 +83,7 @@ class SaveRequestTest extends TestCase
                     ]
                 ]
             ),
-            new Deserializer()
+            $deserializer
         );
     }
 
@@ -102,5 +113,37 @@ class SaveRequestTest extends TestCase
             ],
             is_array($content) ? json_encode(['data' => $content]) : null
         );
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject|DocumentDeserializerInterface
+     */
+    private function createDeserializer(): \PHPUnit_Framework_MockObject_MockObject
+    {
+        $deserializer = $this->createConfiguredMock(
+            DocumentDeserializerInterface::class,
+            [
+                'deserializeDocument' => $this->createConfiguredMock(
+                    DocumentInterface::class,
+                    [
+                        'data' => $this->createConfiguredMock(
+                            ResourceCollectionInterface::class,
+                            [
+                                'isEmpty' => false,
+                                'first' => $this->createConfiguredMock(
+                                    ResourceInterface::class,
+                                    [
+                                        'type' => 'tests',
+                                        'id' => 'test-1',
+                                    ]
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
+        );
+
+        return $deserializer;
     }
 }

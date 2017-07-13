@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\Model\Request;
 
-use Enm\JsonApi\Server\Model\Request\SimpleRequest;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequest;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
@@ -12,11 +12,11 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class SimpleRequestTest extends TestCase
+class AdvancedJsonApiRequestTest extends TestCase
 {
     public function testSimpleRequest()
     {
-        $request = new SimpleRequest($this->createHttpRequest('http://example.com/tests/test-1'));
+        $request = new AdvancedJsonApiRequest($this->createHttpRequest('http://example.com/tests/test-1'));
 
         self::assertEquals('tests', $request->type());
         self::assertEquals('test-1', $request->id());

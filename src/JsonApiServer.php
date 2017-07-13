@@ -5,13 +5,14 @@ namespace Enm\JsonApi\Server;
 
 use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Exception\JsonApiException;
+use Enm\JsonApi\JsonApiAwareInterface;
 use Enm\JsonApi\JsonApiInterface;
 use Enm\JsonApi\JsonApiTrait;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Model\Error\Error;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Model\ExceptionTrait;
-use Enm\JsonApi\Server\Model\Request\SimpleRequest;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
@@ -105,11 +106,29 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      */
     protected function apiRequestFromHttpRequest(RequestInterface $request): AdvancedJsonApiRequestInterface
     {
-        return new SimpleRequest($request, $this->apiPrefix);
+        return new AdvancedJsonApiRequest($request, $this->apiPrefix);
     }
 
-    public function handleHttpRequest(RequestInterface $request): ResponseInterface
+    /**
+     * @param RequestInterface $request
+     * @param bool $debug
+     * @return ResponseInterface
+     */
+    public function handleHttpRequest(RequestInterface $request, bool $debug = false): ResponseInterface
     {
+        $this->logger()->info($request->getMethod() . ' ' . (string)$request->getUri());
+
+        if ($debug) {
+            $this->logger()->debug(
+                $request->getMethod() . ' ' . (string)$request->getUri(),
+                [
+                    'apiPrefix' => $this->apiPrefix,
+                    'headers' => $request->getHeaders(),
+                    'content' => (string)$request->getBody()
+                ]
+            );
+        }
+
         try {
             switch (strtoupper($request->getMethod())) {
                 case 'GET':
@@ -126,17 +145,18 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
                     throw new BadRequestException('Http method "' . $request->getMethod() . '" is not supported by json api!');
             }
         } catch (\Exception $e) {
-            return $this->handleException($e);
+            return $this->handleException($e, $debug);
         }
     }
 
     /**
      * @param \Exception $exception
+     * @param bool $debug
      * @return ResponseInterface
      */
-    public function handleException(\Exception $exception): ResponseInterface
+    protected function handleException(\Exception $exception, bool $debug): ResponseInterface
     {
-        $this->logger()->critical(
+        $this->logger()->error(
             $exception->getMessage(),
             [
                 'file' => $exception->getFile(),
@@ -146,7 +166,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
             ]
         );
 
-        $apiError = Error::createFromException($exception);
+        $apiError = Error::createFromException($exception, $debug);
 
         $document = $this->singleResourceDocument();
         $document->errors()->add($apiError);
@@ -178,8 +198,9 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
 
         foreach ($document->data()->all() as $resource) {
-            $this->normalizeResource($resource, $fetchRequest);
+            $this->removeUnrequestedAttributes($resource, $fetchRequest);
             $this->includeRelated($document, $resource, $fetchRequest);
+            $this->removeUnrequestedRelationships($resource, $fetchRequest);
         }
 
         return $this->respondWith($document);
@@ -229,11 +250,25 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      * @param FetchRequestInterface $request
      * @return void
      */
-    protected function normalizeResource(ResourceInterface $resource, FetchRequestInterface $request)
+    protected function removeUnrequestedAttributes(ResourceInterface $resource, FetchRequestInterface $request)
     {
         foreach ($resource->attributes()->all() as $key => $value) {
-            if (!$request->shouldContainAttributes() || !$request->isFieldRequested($resource->type(), $key)) {
+            if (!$request->requestedResourceBody() || !$request->requestedField($resource->type(), $key)) {
                 $resource->attributes()->remove($key);
+            }
+        }
+    }
+
+    /**
+     * @param ResourceInterface $resource
+     * @param FetchRequestInterface $request
+     * @return void
+     */
+    protected function removeUnrequestedRelationships(ResourceInterface $resource, FetchRequestInterface $request)
+    {
+        if (!$request->requestedResourceBody()) {
+            foreach ($resource->relationships()->all() as $relationship) {
+                $resource->relationships()->removeElement($relationship);
             }
         }
     }
@@ -251,16 +286,18 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
         FetchRequestInterface $request
     ) {
         foreach ($resource->relationships()->all() as $relationship) {
-            $shouldIncludeRelationship = $request->shouldIncludeRelationship($relationship->name());
+            $shouldIncludeRelationship = $request->requestedInclude($relationship->name());
             $subRequest = $request->subRequest($relationship->name());
             foreach ($relationship->related()->all() as $related) {
-                $this->normalizeResource($related, $subRequest);
+                $this->removeUnrequestedAttributes($related, $subRequest);
 
                 if ($shouldIncludeRelationship && !$document->included()->has($related->type(), $related->id())) {
                     $document->included()->set($related);
                 }
 
                 $this->includeRelated($document, $related, $subRequest);
+
+                $this->removeUnrequestedRelationships($related, $subRequest);
             }
         }
     }

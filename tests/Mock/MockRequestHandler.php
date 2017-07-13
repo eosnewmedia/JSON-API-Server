@@ -5,8 +5,8 @@ namespace Enm\JsonApi\Server\Tests\Mock;
 
 use Enm\JsonApi\Exception\ResourceNotFoundException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\JsonApiAwareInterface;
-use Enm\JsonApi\Server\JsonApiAwareTrait;
+use Enm\JsonApi\JsonApiAwareInterface;
+use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\ExceptionTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
@@ -87,6 +87,13 @@ class MockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterfa
     {
         $resource = $this->jsonApi()->resource($request->relationship(), $request->relationship() . '-1');
         $resource->attributes()->set('title', 'Test ' . $request->relationship());
+        $resource->relationships()->set(
+            $this->jsonApi()->toOneRelationship(
+                'test',
+                $this->jsonApi()->resource('tests', 'test-1')
+            )
+        );
+
 
         return $this->jsonApi()->multiResourceDocument([$resource]);
     }

@@ -21,7 +21,8 @@ class JsonApiServerTest extends TestCase
         $server = new JsonApiServer(new MockRequestHandler(), 'api');
 
         $response = $server->handleHttpRequest(
-            $this->createHttpRequest('GET', 'http://example.com/api/tests/test-1')
+            $this->createHttpRequest('GET', 'http://example.com/api/tests/test-1'),
+            true
         );
 
         self::assertEquals(200, $response->getStatusCode());
@@ -97,6 +98,29 @@ class JsonApiServerTest extends TestCase
     }
 
     public function testFetchRelationship()
+    {
+        $server = new JsonApiServer(new MockRequestHandler(), 'api');
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest('GET', 'http://example.com/api/tests/test-1/relationship/examples')
+        );
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        self::assertArraySubset(
+            [
+                'data' => [
+                    [
+                        'type' => 'examples',
+                        'id' => 'examples-1',
+                    ]
+                ]
+            ],
+            json_decode((string)$response->getBody(), true)
+        );
+    }
+
+    public function testFetchRelatedResources()
     {
         $server = new JsonApiServer(new MockRequestHandler(), 'api');
 

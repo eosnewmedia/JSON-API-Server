@@ -30,6 +30,6 @@
     "phpunit/phpunit": "^6.0"
   },
   "provide": {
-    "enm/json-api-server-bundle": "^1.0"
+    "enm/json-api-server-bundle": "^2.0"
   }
 }

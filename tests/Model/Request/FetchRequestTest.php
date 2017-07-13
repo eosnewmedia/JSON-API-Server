@@ -28,7 +28,7 @@ class FetchRequestTest extends TestCase
         self::assertEquals('tests', $request->type());
         self::assertEquals('test-1', $request->id());
         self::assertEquals('example', $request->relationship());
-        self::assertFalse($request->shouldContainAttributes());
+        self::assertFalse($request->requestedResourceBody());
     }
 
     public function testRelatedRequest()
@@ -44,7 +44,7 @@ class FetchRequestTest extends TestCase
         self::assertEquals('tests', $request->type());
         self::assertEquals('test-1', $request->id());
         self::assertEquals('example', $request->relationship());
-        self::assertTrue($request->shouldContainAttributes());
+        self::assertTrue($request->requestedResourceBody());
     }
 
     public function testSubRequest()
@@ -65,10 +65,10 @@ class FetchRequestTest extends TestCase
         self::assertTrue($subRequest->filter()->isEmpty());
         self::assertTrue($subRequest->pagination()->isEmpty());
         self::assertTrue($subRequest->sorting()->isEmpty());
-        self::assertTrue($subRequest->isFieldRequested('tests', 'abc'));
-        self::assertFalse($subRequest->isFieldRequested('tests', 'def'));
-        self::assertTrue($subRequest->shouldContainRelationships());
-        self::assertFalse($subRequest->subRequest('test')->shouldContainRelationships());
+        self::assertTrue($subRequest->requestedField('tests', 'abc'));
+        self::assertFalse($subRequest->requestedField('tests', 'def'));
+        self::assertTrue($subRequest->requestedRelationships());
+        self::assertFalse($subRequest->subRequest('test')->requestedRelationships());
     }
 
     public function testSubRequestKeepFilter()
@@ -89,8 +89,8 @@ class FetchRequestTest extends TestCase
         self::assertEquals('ok', $subRequest->filter()->getOptional('test'));
         self::assertCount(0, $subRequest->pagination()->all());
         self::assertCount(0, $subRequest->sorting()->all());
-        self::assertTrue($subRequest->isFieldRequested('tests', 'abc'));
-        self::assertFalse($subRequest->isFieldRequested('tests', 'def'));
+        self::assertTrue($subRequest->requestedField('tests', 'abc'));
+        self::assertFalse($subRequest->requestedField('tests', 'def'));
     }
 
     public function testIncludes()
@@ -107,12 +107,12 @@ class FetchRequestTest extends TestCase
         self::assertEquals('test-1', $request->id());
 
         $exampleRequest = $request->subRequest('example');
-        self::assertTrue($exampleRequest->shouldContainAttributes());
+        self::assertTrue($exampleRequest->requestedResourceBody());
         self::assertFalse(
-            $exampleRequest->subRequest('relationA')->shouldContainAttributes()
+            $exampleRequest->subRequest('relationA')->requestedResourceBody()
         );
         self::assertTrue(
-            $exampleRequest->subRequest('relationA')->subRequest('subA')->shouldContainAttributes()
+            $exampleRequest->subRequest('relationA')->subRequest('subA')->requestedResourceBody()
         );
     }
 
@@ -124,10 +124,10 @@ class FetchRequestTest extends TestCase
             )
         );
 
-        self::assertTrue($request->isFieldRequested('tests', 'example'));
-        self::assertFalse($request->isFieldRequested('tests', 'example2'));
-        self::assertTrue($request->isFieldRequested('dummies', 'dummy'));
-        self::assertFalse($request->isFieldRequested('examples', 'example'));
+        self::assertTrue($request->requestedField('tests', 'example'));
+        self::assertFalse($request->requestedField('tests', 'example2'));
+        self::assertTrue($request->requestedField('dummies', 'dummy'));
+        self::assertFalse($request->requestedField('examples', 'example'));
     }
 
     public function testPagination()

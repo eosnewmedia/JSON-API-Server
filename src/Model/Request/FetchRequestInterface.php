@@ -21,11 +21,11 @@ interface FetchRequestInterface extends \Enm\JsonApi\Model\Request\FetchRequestI
     public function relationship(): string;
 
     /**
-     * Indicates if the response for this request should contain attributes
+     * Indicates if the response for this request should contain attributes and relationships
      *
      * @return bool
      */
-    public function shouldContainAttributes(): bool;
+    public function requestedResourceBody(): bool;
 
     /**
      * If a "field" parameter is available and does not contains the attribute
@@ -36,7 +36,7 @@ interface FetchRequestInterface extends \Enm\JsonApi\Model\Request\FetchRequestI
      *
      * @return bool
      */
-    public function isFieldRequested(string $type, string $name): bool;
+    public function requestedField(string $type, string $name): bool;
 
     /**
      * Indicates if resources fetched by this request should provide their relationships even if their attributes are
@@ -44,13 +44,13 @@ interface FetchRequestInterface extends \Enm\JsonApi\Model\Request\FetchRequestI
      *
      * @return bool
      */
-    public function shouldContainRelationships(): bool;
+    public function requestedRelationships(): bool;
 
     /**
      * @param string $relationship
      * @return bool
      */
-    public function shouldIncludeRelationship(string $relationship): bool;
+    public function requestedInclude(string $relationship): bool;
 
     /**
      * Creates a new fetch resource request for the given relationship.

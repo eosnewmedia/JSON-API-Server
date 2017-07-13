@@ -85,11 +85,11 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
     }
 
     /**
-     * Indicates if the response for this request should contain only identifiers or full resources
+     * Indicates if the response for this request should contain attributes and relationships
      *
      * @return bool
      */
-    public function shouldContainAttributes(): bool
+    public function requestedResourceBody(): bool
     {
         return !$this->onlyIdentifiers;
     }
@@ -103,7 +103,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      *
      * @return bool
      */
-    public function isFieldRequested(string $type, string $name): bool
+    public function requestedField(string $type, string $name): bool
     {
         if (!array_key_exists($type, $this->fields())) {
             return true;
@@ -118,16 +118,16 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      *
      * @return bool
      */
-    public function shouldContainRelationships(): bool
+    public function requestedRelationships(): bool
     {
-        return $this->shouldContainAttributes() || count($this->includes()) > 0;
+        return $this->requestedResourceBody() || count($this->includes()) > 0;
     }
 
     /**
      * @param string $relationship
      * @return bool
      */
-    public function shouldIncludeRelationship(string $relationship): bool
+    public function requestedInclude(string $relationship): bool
     {
         return in_array($relationship, $this->includedRelationships, true);
     }
@@ -175,7 +175,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         );
 
         $subRequest->mainRequest = $this->mainHttpRequest();
-        $subRequest->onlyIdentifiers = !$this->shouldIncludeRelationship($relationship);
+        $subRequest->onlyIdentifiers = !$this->requestedInclude($relationship);
 
         return $subRequest;
     }
