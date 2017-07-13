@@ -144,29 +144,29 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
                 default:
                     throw new BadRequestException('Http method "' . $request->getMethod() . '" is not supported by json api!');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->handleException($e, $debug);
         }
     }
 
     /**
-     * @param \Exception $exception
+     * @param \Throwable $throwable
      * @param bool $debug
      * @return ResponseInterface
      */
-    protected function handleException(\Exception $exception, bool $debug): ResponseInterface
+    protected function handleException(\Throwable $throwable, bool $debug): ResponseInterface
     {
         $this->logger()->error(
-            $exception->getMessage(),
+            $throwable->getMessage(),
             [
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-                'code' => $exception->getCode(),
-                'trace' => $exception->getTrace()
+                'file' => $throwable->getFile(),
+                'line' => $throwable->getLine(),
+                'code' => $throwable->getCode(),
+                'trace' => $throwable->getTrace()
             ]
         );
 
-        $apiError = Error::createFromException($exception, $debug);
+        $apiError = Error::createFrom($throwable, $debug);
 
         $document = $this->singleResourceDocument();
         $document->errors()->add($apiError);

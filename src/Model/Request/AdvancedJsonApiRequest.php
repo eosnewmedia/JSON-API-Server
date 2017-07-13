@@ -21,7 +21,7 @@ class AdvancedJsonApiRequest extends JsonApiRequest implements AdvancedJsonApiRe
      */
     public function __construct(RequestInterface $request, string $apiPrefix = '')
     {
-        $this->mainRequest = $request;
+        $this->originalHttpRequest = $request;
         $this->apiPrefix = $apiPrefix;
 
         list($type, $id) = $this->pathSegments();

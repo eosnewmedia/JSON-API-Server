@@ -14,5 +14,5 @@ interface AdvancedJsonApiRequestInterface extends JsonApiRequestInterface
     /**
      * @return RequestInterface
      */
-    public function mainHttpRequest(): RequestInterface;
+    public function originalHttpRequest(): RequestInterface;
 }

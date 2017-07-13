@@ -35,7 +35,7 @@ The document created by a request handler will be normalized and transformed int
 ## JSON API Aware
 
 If your instance of `Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface` implements `Enm\JsonApi\JsonApiAwareInterface`
-the json api server is set as dependency to access helper method for instantiate new objects.
+the json api server will be given as dependency for accessing helper methods for creating new objects.
 
 You should use `Enm\JsonApi\JsonApiAwareTrait` in your class to implement the interface.
 

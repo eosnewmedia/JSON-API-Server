@@ -16,7 +16,7 @@ trait AdvancedJsonApiRequestTrait
     /**
      * @var RequestInterface
      */
-    private $mainRequest;
+    private $originalHttpRequest;
 
     /**
      * @var string
@@ -26,9 +26,9 @@ trait AdvancedJsonApiRequestTrait
     /**
      * @return RequestInterface
      */
-    public function mainHttpRequest(): RequestInterface
+    public function originalHttpRequest(): RequestInterface
     {
-        return $this->mainRequest;
+        return $this->originalHttpRequest;
     }
 
     /**
@@ -36,7 +36,7 @@ trait AdvancedJsonApiRequestTrait
      */
     protected function validateContentType()
     {
-        $contentTypeHeader = $this->mainHttpRequest()->getHeader('Content-Type');
+        $contentTypeHeader = $this->originalHttpRequest()->getHeader('Content-Type');
 
         $isAvailable = count($contentTypeHeader) !== 0;
         if (!$isAvailable || strpos($contentTypeHeader[0], JsonApiInterface::CONTENT_TYPE) === false) {
@@ -56,7 +56,7 @@ trait AdvancedJsonApiRequestTrait
             trim(
                 ltrim(
                     trim(
-                        $this->mainHttpRequest()->getUri()->getPath(),
+                        $this->originalHttpRequest()->getUri()->getPath(),
                         '/'
                     ),
                     trim(

@@ -26,7 +26,7 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
         DocumentDeserializerInterface $documentDeserializer,
         string $apiPrefix = ''
     ) {
-        $this->mainRequest = $request;
+        $this->originalHttpRequest = $request;
         $this->apiPrefix = $apiPrefix;
 
         $this->validateContentType();
@@ -55,6 +55,6 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
      */
     public function fetch(): FetchRequestInterface
     {
-        return new FetchRequest($this->mainHttpRequest(), false, $this->apiPrefix);
+        return new FetchRequest($this->originalHttpRequest(), false, $this->apiPrefix);
     }
 }

@@ -44,7 +44,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
     public function __construct(RequestInterface $request, bool $mainRequest = true, string $apiPrefix = '')
     {
         try {
-            $this->mainRequest = $request;
+            $this->originalHttpRequest = $request;
             $this->isMainRequest = $mainRequest;
             $this->apiPrefix = $apiPrefix;
 
@@ -144,7 +144,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     public function subRequest(string $relationship, $keepFilters = false): FetchRequestInterface
     {
-        $uri = $this->mainHttpRequest()->getUri();
+        $uri = $this->originalHttpRequest()->getUri();
         parse_str($uri->getQuery(), $originalQuery);
 
         $query = new KeyValueCollection($originalQuery);
@@ -169,12 +169,12 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         }
 
         $subRequest = new self(
-            $this->mainHttpRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
+            $this->originalHttpRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
             false,
             $this->apiPrefix
         );
 
-        $subRequest->mainRequest = $this->mainHttpRequest();
+        $subRequest->originalHttpRequest = $this->originalHttpRequest();
         $subRequest->onlyIdentifiers = !$this->requestedInclude($relationship);
 
         return $subRequest;
@@ -186,7 +186,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     protected function buildFromQuery()
     {
-        parse_str($this->mainHttpRequest()->getUri()->getQuery(), $uriQuery);
+        parse_str($this->originalHttpRequest()->getUri()->getQuery(), $uriQuery);
         $query = new KeyValueCollection($uriQuery);
 
         if ($query->has('include')) {

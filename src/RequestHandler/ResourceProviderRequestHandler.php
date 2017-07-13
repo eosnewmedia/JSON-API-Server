@@ -18,6 +18,7 @@ use Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface;
 class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApiAwareInterface
 {
     use JsonApiAwareTrait;
+    use SeparatedSaveTrait;
 
     /**
      * @var ResourceProviderInterface[]
@@ -116,14 +117,21 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
      * @throws \RuntimeException
      * @throws UnsupportedTypeException
      */
-    public function saveResource(SaveRequestInterface $request): DocumentInterface
+    protected function createResource(SaveRequestInterface $request): DocumentInterface
     {
-        if (!$request->containsId()) {
-            return $this->jsonApi()->singleResourceDocument(
-                $this->resourceProvider($request)->createResource($request)
-            );
-        }
+        return $this->jsonApi()->singleResourceDocument(
+            $this->resourceProvider($request)->createResource($request)
+        );
+    }
 
+    /**
+     * @param SaveRequestInterface $request
+     * @return DocumentInterface
+     * @throws \RuntimeException
+     * @throws UnsupportedTypeException
+     */
+    protected function patchResource(SaveRequestInterface $request): DocumentInterface
+    {
         return $this->jsonApi()->singleResourceDocument(
             $this->resourceProvider($request)->patchResource($request)
         );
