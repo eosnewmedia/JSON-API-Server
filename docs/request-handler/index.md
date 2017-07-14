@@ -16,9 +16,9 @@
 
 ## Concept
 
-Request handlers are responsible for turning a json api request into a document, which contains the requested resources.
+Request handlers are responsible for turning a JSON API request into a document, which contains the requested resources.
 
-The document created by a request handler will be normalized and transformed into a json api http response.
+The document created by a request handler will be normalized and transformed into a JSON API HTTP response.
 
 ## Interface
 
@@ -35,14 +35,14 @@ The document created by a request handler will be normalized and transformed int
 ## JSON API Aware
 
 If your instance of `Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface` implements `Enm\JsonApi\JsonApiAwareInterface`
-the json api server will be given as dependency for accessing helper methods for creating new objects.
+the JSON API server will be given as dependency for accessing helper methods for creating new objects.
 
 You should use `Enm\JsonApi\JsonApiAwareTrait` in your class to implement the interface.
 
 ## Usage
 
 If your request handler does not allow write access to your resources you can use `Enm\JsonApi\Server\RequestHandler\FetchOnlyTrait`
-in your handler class, which results in a 403 (not allowed) http status if a post, patch or delete is requested.
+in your handler class, which results in a 403 (not allowed) HTTP status if a post, patch or delete is requested.
 
 If handled resources do not have relationships your request handler can use `Enm\JsonApi\Server\RequestHandler\NoRelationshipsTrait`,
 which results in a 400 (bad request) status code if any relationship is requested.
@@ -50,7 +50,7 @@ which results in a 400 (bad request) status code if any relationship is requeste
 ## Handler Registry
 
 The request handler registry (`Enm\JsonApi\Server\RequestHandler\RequestHandlerRegistry`) can be used to add multiple request
-handlers to the json api server which normally supports only one handler.
+handlers to the JSON API server which normally supports only one handler.
 
 ```php
 $registry = new RequestHandlerRegistry();
