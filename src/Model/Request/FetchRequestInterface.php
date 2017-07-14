@@ -14,13 +14,6 @@ interface FetchRequestInterface extends \Enm\JsonApi\Model\Request\FetchRequestI
     public function isMainRequest(): bool;
 
     /**
-     * Returns the name of the requested relationship if the main request is a relationship request
-     *
-     * @return string
-     */
-    public function relationship(): string;
-
-    /**
      * Indicates if the response for this request should contain attributes and relationships
      *
      * @return bool

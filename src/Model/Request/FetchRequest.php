@@ -21,19 +21,9 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
     private $isMainRequest;
 
     /**
-     * @var string
-     */
-    private $requestedRelationship;
-
-    /**
      * @var array
      */
     private $includedRelationships = [];
-
-    /**
-     * @var bool
-     */
-    private $onlyIdentifiers = false;
 
     /**
      * @param RequestInterface $request
@@ -50,17 +40,8 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
 
             $this->validateContentType();
 
-            list($type, $id, $relationship, $relationshipName) = $this->pathSegments();
+            list($type, $id) = $this->pathSegments();
             parent::__construct((string)$type, (string)$id);
-
-            // parse relationship/related request
-            if ((string)$relationship === 'relationship' && (string)$relationshipName !== '') {
-                $this->onlyIdentifiers = true;
-            } elseif ((string)$relationship !== '' && (string)$relationshipName === '') {
-                $relationshipName = $relationship;
-            }
-            $this->requestedRelationship = (string)$relationshipName;
-
 
             $this->buildFromQuery();
         } catch (\InvalidArgumentException $e) {
@@ -77,21 +58,13 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
     }
 
     /**
-     * @return string
-     */
-    public function relationship(): string
-    {
-        return $this->requestedRelationship;
-    }
-
-    /**
      * Indicates if the response for this request should contain attributes and relationships
      *
      * @return bool
      */
     public function requestedResourceBody(): bool
     {
-        return !$this->onlyIdentifiers;
+        return !$this->onlyIdentifiers();
     }
 
     /**

@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server\Tests;
 
 use Enm\JsonApi\Server\JsonApiServer;
+use Enm\JsonApi\Server\RequestHandler\ResourceProviderRequestHandler;
 use Enm\JsonApi\Server\Tests\Mock\MockRequestHandler;
+use Enm\JsonApi\Server\Tests\Mock\MockResourceProvider;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +17,6 @@ use Psr\Http\Message\RequestInterface;
  */
 class JsonApiServerTest extends TestCase
 {
-
     public function testFetchResource()
     {
         $server = new JsonApiServer(new MockRequestHandler(), 'api');
@@ -267,6 +268,78 @@ class JsonApiServerTest extends TestCase
         );
 
         self::assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testPostRelationship()
+    {
+        $providerHandler = new ResourceProviderRequestHandler();
+        $providerHandler->addResourceProvider('tests', new MockResourceProvider());
+
+        $server = new JsonApiServer($providerHandler);
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest(
+                'POST',
+                'http://example.com/tests/test-2/relationship/example',
+                [
+                    'type' => 'examples',
+                    'id' => 'example-3'
+                ]
+            )
+        );
+
+        $data = json_decode((string)$response->getBody(), true)['data'];
+
+        self::assertEquals('examples', $data[2]['type']);
+        self::assertEquals('example-3', $data[2]['id']);
+    }
+
+
+    public function testPatchRelationship()
+    {
+        $providerHandler = new ResourceProviderRequestHandler();
+        $providerHandler->addResourceProvider('tests', new MockResourceProvider());
+
+        $server = new JsonApiServer($providerHandler);
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest(
+                'PATCH',
+                'http://example.com/tests/test-2/relationship/example',
+                [
+                    'type' => 'examples',
+                    'id' => 'example-1'
+                ]
+            )
+        );
+
+        $data = json_decode((string)$response->getBody(), true)['data'];
+
+        self::assertEquals('examples', $data['type']);
+        self::assertEquals('example-1', $data['id']);
+    }
+
+    public function testDeleteRelationship()
+    {
+        $providerHandler = new ResourceProviderRequestHandler();
+        $providerHandler->addResourceProvider('tests', new MockResourceProvider());
+
+        $server = new JsonApiServer($providerHandler);
+
+        $response = $server->handleHttpRequest(
+            $this->createHttpRequest(
+                'DELETE',
+                'http://example.com/tests/test-2/relationship/example',
+                [
+                    'type' => 'examples',
+                    'id' => 'example-1'
+                ]
+            )
+        );
+
+        $data = json_decode((string)$response->getBody(), true)['data'];
+
+        self::assertNotEquals('example-1', $data[0]['id']);
     }
 
     public function testInvalidHttpMethod()

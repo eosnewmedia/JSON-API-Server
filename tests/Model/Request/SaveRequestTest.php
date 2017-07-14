@@ -9,7 +9,7 @@ use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Serializer\Deserializer;
 use Enm\JsonApi\Serializer\DocumentDeserializerInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRequest;
+use Enm\JsonApi\Server\Model\Request\SaveSingleResourceRequest;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +25,7 @@ class SaveRequestTest extends TestCase
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createDeserializer();
 
-        $request = new SaveRequest(
+        $request = new SaveSingleResourceRequest(
             $this->createHttpRequest(
                 'http://example.com/tests/test-1',
                 [
@@ -46,7 +46,7 @@ class SaveRequestTest extends TestCase
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createDeserializer();
 
-        $request = new SaveRequest(
+        $request = new SaveSingleResourceRequest(
             $this->createHttpRequest(
                 'http://example.com/tests',
                 [
@@ -70,7 +70,7 @@ class SaveRequestTest extends TestCase
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createDeserializer();
 
-        $request = new SaveRequest(
+        $request = new SaveSingleResourceRequest(
             $this->createHttpRequest(
                 'http://example.com/tests',
                 [
@@ -93,7 +93,7 @@ class SaveRequestTest extends TestCase
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createDeserializer();
 
-        $request = new SaveRequest(
+        $request = new SaveSingleResourceRequest(
             $this->createHttpRequest(
                 'http://example.com/tests/test-1',
                 [
@@ -117,7 +117,7 @@ class SaveRequestTest extends TestCase
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createDeserializer();
 
-        new SaveRequest(
+        new SaveSingleResourceRequest(
             $this->createHttpRequest(
                 'http://example.com/test/test-1',
                 [
@@ -140,7 +140,7 @@ class SaveRequestTest extends TestCase
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createDeserializer();
 
-        new SaveRequest(
+        new SaveSingleResourceRequest(
             $this->createHttpRequest(
                 'http://example.com/tests/test-2',
                 [
@@ -160,7 +160,7 @@ class SaveRequestTest extends TestCase
      */
     public function testInvalidRequestEmptyData()
     {
-        new SaveRequest(
+        new SaveSingleResourceRequest(
             $this->createHttpRequest('http://example.com/tests/test-1'),
             new Deserializer()
         );

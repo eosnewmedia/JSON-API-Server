@@ -41,11 +41,29 @@ You should use `Enm\JsonApi\JsonApiAwareTrait` in your class to implement the in
 
 ## Usage
 
+If you want to handle post (create) and patch (update) requests on a different way let your request handler use
+`Enm\JsonApi\Server\RequestHandler\SeparatedSaveTrait` and implement the methods `createResource` and `patchResource`. 
+
 If your request handler does not allow write access to your resources you can use `Enm\JsonApi\Server\RequestHandler\FetchOnlyTrait`
 in your handler class, which results in a 403 (not allowed) HTTP status if a post, patch or delete is requested.
 
 If handled resources do not have relationships your request handler can use `Enm\JsonApi\Server\RequestHandler\NoRelationshipsTrait`,
 which results in a 400 (bad request) status code if any relationship is requested.
+
+If your request handler uses more than one of `Enm\JsonApi\Server\RequestHandler\FetchOnlyTrait`,
+ `Enm\JsonApi\Server\RequestHandler\NoRelationshipsTrait` and `Enm\JsonApi\Server\RequestHandler\SeparatedRelationshipSaveTrait`
+at the same time you have to decide which implementation of method `saveRelationship` should by used by your handler:
+
+```php
+class YourRequestHandler implements ResourceHandlerInterface, JsonApiAwareInterface
+{
+    use JsonApiAwareTrait, FetchOnlyTrait, NoRelationshipsTrait {
+        FetchOnlyTrait::saveRelationship insteadof NoRelationshipsTrait;
+    }
+    
+    // ... your implementation
+}
+```
 
 ## Handler Registry
 

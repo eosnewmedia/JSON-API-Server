@@ -20,6 +20,27 @@ class AdvancedJsonApiRequestTest extends TestCase
 
         self::assertEquals('tests', $request->type());
         self::assertEquals('test-1', $request->id());
+        self::assertFalse($request->isMainRequestRelationshipRequest());
+        self::assertFalse($request->onlyIdentifiers());
+    }
+
+    public function testRelationshipRequest()
+    {
+        $request = new AdvancedJsonApiRequest($this->createHttpRequest('http://example.com/tests/test-1/relationship/abc'));
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+        self::assertTrue($request->isMainRequestRelationshipRequest());
+        self::assertEquals('abc', $request->relationship());
+        self::assertTrue($request->onlyIdentifiers());
+    }
+
+    /**
+     * @expectedException \Enm\JsonApi\Exception\BadRequestException
+     */
+    public function testInvalidRelationshipRequest()
+    {
+        new AdvancedJsonApiRequest($this->createHttpRequest('http://example.com/tests/test-1/relationships/abc'));
     }
 
     /**

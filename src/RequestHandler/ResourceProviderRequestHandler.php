@@ -9,6 +9,7 @@ use Enm\JsonApi\JsonApiAwareInterface;
 use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface;
 
@@ -151,5 +152,24 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
         $document->withHttpStatus(204);
 
         return $document;
+    }
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return DocumentInterface
+     * @throws \RuntimeException
+     * @throws UnsupportedTypeException
+     */
+    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface
+    {
+        $relationship = $this->resourceProvider($request)->modifyRelationship($request);
+
+        if ($relationship->shouldBeHandledAsCollection()) {
+            return $this->jsonApi()->multiResourceDocument($relationship->related()->all());
+        }
+
+        return $this->jsonApi()->singleResourceDocument(
+            $relationship->related()->isEmpty() ? null : $relationship->related()->first()
+        );
     }
 }

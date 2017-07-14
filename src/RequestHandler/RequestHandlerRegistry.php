@@ -10,6 +10,7 @@ use Enm\JsonApi\JsonApiAwareInterface;
 use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
@@ -86,6 +87,17 @@ class RequestHandlerRegistry implements RequestHandlerInterface, JsonApiAwareInt
      * @throws \RuntimeException
      */
     public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface
+    {
+        return $this->requestHandler($request)->deleteResource($request);
+    }
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return DocumentInterface
+     * @throws UnsupportedTypeException
+     * @throws \RuntimeException
+     */
+    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface
     {
         return $this->requestHandler($request)->deleteResource($request);
     }

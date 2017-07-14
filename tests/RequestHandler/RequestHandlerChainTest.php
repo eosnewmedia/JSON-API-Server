@@ -7,6 +7,7 @@ use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\JsonApiServer;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerChain;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerRegistry;
@@ -181,6 +182,36 @@ class RequestHandlerChainTest extends TestCase
         $request = $this->createConfiguredMock(AdvancedJsonApiRequestInterface::class, ['type' => 'fetchOnlyExamples']);
 
         $chain->deleteResource($request);
+    }
+
+    /**
+     * @expectedException \Enm\JsonApi\Exception\NotAllowedException
+     */
+    public function testModifyRelationshipNotAllowed()
+    {
+        $chain = $this->createChain();
+        /** @var SaveRelationshipRequestInterface $request */
+        $request = $this->createConfiguredMock(
+            SaveRelationshipRequestInterface::class,
+            ['type' => 'fetchOnlyTests']
+        );
+
+        $chain->saveRelationship($request);
+    }
+
+    /**
+     * @expectedException \Enm\JsonApi\Exception\NotAllowedException
+     */
+    public function testModifyRelationshipNotAllowedWithProvider()
+    {
+        $chain = $this->createChain();
+        /** @var SaveRelationshipRequestInterface $request */
+        $request = $this->createConfiguredMock(
+            SaveRelationshipRequestInterface::class,
+            ['type' => 'fetchOnlyExamples']
+        );
+
+        $chain->saveRelationship($request);
     }
 
     /**

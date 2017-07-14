@@ -16,9 +16,9 @@ use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
  */
 class FetchOnlyMockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterface
 {
-    use FetchOnlyTrait;
-    use NoRelationshipsTrait;
-    use JsonApiAwareTrait;
+    use FetchOnlyTrait, NoRelationshipsTrait, JsonApiAwareTrait {
+        FetchOnlyTrait::saveRelationship insteadof NoRelationshipsTrait;
+    }
 
     /**
      * @param FetchRequestInterface $request

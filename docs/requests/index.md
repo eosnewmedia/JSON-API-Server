@@ -16,7 +16,9 @@ These methods are provided for optimizing response creation:
 |--------------------------------------------------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | originalHttpRequest()                                  | RequestInterface      | Returns the instance (PSR-7) of the original HTTP request.                                                                                                                           |
 | isMainRequest()                                        | bool                  | Indicates if the current request is the main or a sub request.                                                                                                                       |
-| relationship()                                         | string                | Returns the name of the requested relationship if the main request is a relationship request, otherwise an empty string.                                                             |
+| isMainRequestRelationshipRequest()                     | bool                  | Indicates if a relationship is requested.                                                                                                                                            |
+| onlyIdentifiers()                                      | bool                  | Indicates if the response for this request should only contain identifiers or the full resource objects.                                                                             |
+| relationship()                                         | string                | Returns the name of the requested relationship if the main request is a relationship request.                                                                                        |
 | requestedResourceBody()                                | bool                  | Indicates if the response for this request should contain attributes and relationships                                                                                               |
 | requestedField(string $type, string $name)             | bool                  | Indicates if a field (attribute) should be contained in the resource response.                                                                                                       |
 | requestedRelationships()                               | bool                  | Indicates if resources fetched by this request should provide their relationships even if their attributes are not requested (for example with sub request for "include" parameter). |
@@ -76,10 +78,13 @@ A save request is represented by an instance of `Enm\JsonApi\Server\Model\Reques
 
 These methods are provided for optimizing response creation:
 
-| Method                | Return Type           | Description                                                |
-|-----------------------|-----------------------|------------------------------------------------------------|
-| originalHttpRequest() | RequestInterface      | Returns the instance (PSR-7) of the original HTTP request. |
-| fetch()               | FetchRequestInterface | Create a new fetch request from current request            |
+| Method                             | Return Type           | Description                                                                                              |
+|------------------------------------|-----------------------|----------------------------------------------------------------------------------------------------------|
+| originalHttpRequest()              | RequestInterface      | Returns the instance (PSR-7) of the original HTTP request.                                               |
+| isMainRequestRelationshipRequest() | bool                  | Indicates if a relationship is requested.                                                                |
+| onlyIdentifiers()                  | bool                  | Indicates if the response for this request should only contain identifiers or the full resource objects. |
+| relationship()                     | string                | Returns the name of the requested relationship if the main request is a relationship request.            |
+| fetch()                            | FetchRequestInterface | Create a new fetch request from current request.                                                         |
 
 Example of usage ("saveResource" in a request handler, which implements `JsonApiAwareInterface`):
 
@@ -128,9 +133,12 @@ A delete request is represented by an instance of `Enm\JsonApi\Server\Model\Requ
 
 These methods are provided for optimizing response creation:
 
-| Method                | Return Type      | Description                                                |
-|-----------------------|------------------|------------------------------------------------------------|
-| originalHttpRequest() | RequestInterface | Returns the instance (PSR-7) of the original HTTP request. |
+| Method                             | Return Type      | Description                                                                                              |
+|------------------------------------|------------------|----------------------------------------------------------------------------------------------------------|
+| originalHttpRequest()              | RequestInterface | Returns the instance (PSR-7) of the original HTTP request.                                               |
+| isMainRequestRelationshipRequest() | bool             | Indicates if a relationship is requested.                                                                |
+| onlyIdentifiers()                  | bool             | Indicates if the response for this request should only contain identifiers or the full resource objects. |
+| relationship()                     | string           | Returns the name of the requested relationship if the main request is a relationship request.            |
 
 Example of usage ("deleteResource" in a request handler, which implements `JsonApiAwareInterface`):
 

@@ -11,7 +11,7 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements SaveRequestInterface
+class RelationshipModificationRequest extends \Enm\JsonApi\Model\Request\RelationshipModificationRequest implements SaveRelationshipRequestInterface
 {
     use AdvancedJsonApiRequestTrait;
 
@@ -33,18 +33,47 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
 
         list($type, $id) = $this->pathSegments();
 
-        $documentData = json_decode((string)$request->getBody(), true);
+        if (!$this->isMainRequestRelationshipRequest()) {
+            throw new BadRequestException('Missing relationship which should became modified!');
+        }
+
+        if (!$this->onlyIdentifiers()) {
+            throw new BadRequestException('Related resources can not be modified by a relationship update!');
+        }
+
+        $body = (string)$request->getBody();
+        $documentData = $body !== '' ? json_decode($body, true) : [];
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new BadRequestException('Invalid json given!');
         }
 
         $document = $documentDeserializer->deserializeDocument($documentData);
 
-        parent::__construct($document, $id);
+        parent::__construct($type, $id, $document);
+    }
 
-        if ($document->data()->first()->type() !== $type) {
-            throw new BadRequestException('Requested resource type does not match given resource type!');
-        }
+    /**
+     * @return bool
+     */
+    public function requestedReplace(): bool
+    {
+        return strtoupper($this->originalHttpRequest()->getMethod()) === 'PATCH';
+    }
+
+    /**
+     * @return bool
+     */
+    public function requestedAdd(): bool
+    {
+        return strtoupper($this->originalHttpRequest()->getMethod()) === 'POST';
+    }
+
+    /**
+     * @return bool
+     */
+    public function requestedRemove(): bool
+    {
+        return strtoupper($this->originalHttpRequest()->getMethod()) === 'DELETE';
     }
 
     /**
@@ -57,22 +86,10 @@ class SaveRequest extends \Enm\JsonApi\Model\Request\SaveRequest implements Save
      */
     public function fetch(string $id = ''): FetchRequestInterface
     {
-        if ($id === '' && !$this->containsId()) {
-            throw new \InvalidArgumentException('An id is required to fetch a resource!');
-        }
-
-        if ($id !== '' && $this->containsId() && $this->id() !== $id) {
+        if ($id !== '' && $this->id() !== $id) {
             throw new \InvalidArgumentException('Invalid id given!');
         }
 
-        if (!$this->containsId()) {
-            $this->originalHttpRequest()->withUri(
-                $this->originalHttpRequest()->getUri()->withPath(
-                    $this->originalHttpRequest()->getUri()->getPath() . '/' . $id
-                )
-            );
-        }
-
-        return new FetchRequest($this->originalHttpRequest(), false, $this->apiPrefix);
+        return new FetchRequest($this->originalHttpRequest()->withMethod('GET'), false, $this->apiPrefix);
     }
 }

@@ -6,6 +6,7 @@ namespace Enm\JsonApi\Server\RequestHandler;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
@@ -42,4 +43,10 @@ interface RequestHandlerInterface
      * @return DocumentInterface
      */
     public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface;
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return DocumentInterface
+     */
+    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface;
 }

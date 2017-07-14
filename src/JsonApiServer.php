@@ -16,7 +16,9 @@ use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRequest;
+use Enm\JsonApi\Server\Model\Request\RelationshipModificationRequest;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveSingleResourceRequest;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 use GuzzleHttp\Psr7\Response;
@@ -96,7 +98,18 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      */
     protected function saveRequestFromHttpRequest(RequestInterface $request): SaveRequestInterface
     {
-        return new SaveRequest($request, $this->documentDeserializer(), $this->apiPrefix);
+        return new SaveSingleResourceRequest($request, $this->documentDeserializer(), $this->apiPrefix);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return SaveRelationshipRequestInterface
+     * @throws JsonApiException
+     */
+    protected function saveRelationshipRequestFromHttpRequest(
+        RequestInterface $request
+    ): SaveRelationshipRequestInterface {
+        return new RelationshipModificationRequest($request, $this->documentDeserializer(), $this->apiPrefix);
     }
 
     /**
@@ -183,10 +196,8 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
         if ($fetchRequest->containsId()) {
             if ($fetchRequest->relationship() !== '') {
-
                 $document = $this->requestHandler()->fetchRelationship($fetchRequest);
             } else {
-
                 $document = $this->requestHandler()->fetchResource($fetchRequest);
             }
         } else {
@@ -210,18 +221,22 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      */
     protected function handleSave(RequestInterface $request): ResponseInterface
     {
-        $saveRequest = $this->saveRequestFromHttpRequest($request);
+        if ($this->hasRelationship($request)) {
+            $apiRequest = $this->saveRelationshipRequestFromHttpRequest($request);
+            $document = $this->requestHandler()->saveRelationship($apiRequest);
+        } else {
+            $saveRequest = $this->saveRequestFromHttpRequest($request);
 
-        if ($saveRequest->containsId() && strtoupper($request->getMethod()) === 'POST') {
-            $this->throwBadRequest('A patch request requires the http method "patch"!');
+            if ($saveRequest->containsId() && strtoupper($request->getMethod()) === 'POST') {
+                $this->throwBadRequest('A patch request requires the http method "patch"!');
+            }
+
+            if (!$saveRequest->containsId() && strtoupper($request->getMethod()) === 'PATCH') {
+                $this->throwBadRequest('A create request requires the http method "post"!');
+            }
+
+            $document = $this->requestHandler()->saveResource($saveRequest);
         }
-
-        if (!$saveRequest->containsId() && strtoupper($request->getMethod()) === 'PATCH') {
-            $this->throwBadRequest('A create request requires the http method "post"!');
-        }
-
-        $document = $this->requestHandler()->saveResource($saveRequest);
-
         return $this->respondWith($document);
     }
 
@@ -232,14 +247,32 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      */
     protected function handleDelete(RequestInterface $request): ResponseInterface
     {
-        $httpRequest = $this->apiRequestFromHttpRequest($request);
-        if (!$httpRequest->containsId()) {
-            $this->throwBadRequest('Missing the required resource id');
+        if ($this->hasRelationship($request)) {
+            $apiRequest = $this->saveRelationshipRequestFromHttpRequest($request);
+            $document = $this->requestHandler()->saveRelationship($apiRequest);
+        } else {
+            $apiRequest = $this->apiRequestFromHttpRequest($request);
+            if (!$apiRequest->containsId()) {
+                $this->throwBadRequest('Missing the required resource id');
+            }
+
+            $document = $this->requestHandler()->deleteResource($apiRequest);
         }
 
-        $document = $this->requestHandler()->deleteResource($httpRequest);
-
         return $this->respondWith($document);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @return bool
+     */
+    protected function hasRelationship(RequestInterface $request): bool
+    {
+        $path = trim($request->getUri()->getPath(), '/');
+        $prefix = trim($this->apiPrefix, '/');
+        $normalizedPath = trim(ltrim($path, $prefix), '/');
+
+        return substr_count($normalizedPath, '/') > 2;
     }
 
     /**

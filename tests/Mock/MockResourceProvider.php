@@ -3,20 +3,23 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\Mock;
 
+use Enm\JsonApi\Model\Resource\Relationship\RelationshipInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\JsonApiAwareInterface;
 use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface;
+use Enm\JsonApi\Server\ResourceProvider\SeparateRelationshipSaveTrait;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
 class MockResourceProvider implements ResourceProviderInterface, JsonApiAwareInterface
 {
-    use JsonApiAwareTrait;
+    use JsonApiAwareTrait, SeparateRelationshipSaveTrait;
 
     /**
      * Finds a single resource by type and id
@@ -98,5 +101,59 @@ class MockResourceProvider implements ResourceProviderInterface, JsonApiAwareInt
     public function deleteResource(AdvancedJsonApiRequestInterface $request)
     {
 
+    }
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return RelationshipInterface
+     */
+    protected function replaceRelationship(SaveRelationshipRequestInterface $request): RelationshipInterface
+    {
+        return $this->jsonApi()->toOneRelationship(
+            'replaced',
+            $request->document()->data()->isEmpty() ? null : $request->document()->data()->first()
+        );
+    }
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return RelationshipInterface
+     */
+    protected function addRelated(SaveRelationshipRequestInterface $request): RelationshipInterface
+    {
+        $relationship = $this->jsonApi()->toManyRelationship(
+            'added',
+            [
+                $this->jsonApi()->resource('examples', 'example-1'),
+                $this->jsonApi()->resource('examples', 'example-2'),
+            ]
+        );
+
+        foreach ($request->document()->data()->all() as $resource) {
+            $relationship->related()->set($resource);
+        }
+
+        return $relationship;
+    }
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return RelationshipInterface
+     */
+    protected function removeRelated(SaveRelationshipRequestInterface $request): RelationshipInterface
+    {
+        $relationship = $this->jsonApi()->toManyRelationship(
+            'removed',
+            [
+                $this->jsonApi()->resource('examples', 'example-1'),
+                $this->jsonApi()->resource('examples', 'example-2'),
+            ]
+        );
+
+        foreach ($request->document()->data()->all() as $resource) {
+            $relationship->related()->removeElement($resource);
+        }
+
+        return $relationship;
     }
 }

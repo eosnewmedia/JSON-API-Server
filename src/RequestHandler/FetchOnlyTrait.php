@@ -6,6 +6,7 @@ namespace Enm\JsonApi\Server\RequestHandler;
 use Enm\JsonApi\Exception\NotAllowedException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
@@ -35,5 +36,17 @@ trait FetchOnlyTrait
     public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface
     {
         throw new NotAllowedException('You are not allowed to delete resources of type ' . $request->type());
+    }
+
+    /**
+     * @param SaveRelationshipRequestInterface $request
+     * @return DocumentInterface
+     * @throws NotAllowedException
+     */
+    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface
+    {
+        throw new NotAllowedException(
+            'You are not allowed to modify the relationship of type ' . $request->relationship()
+        );
     }
 }
