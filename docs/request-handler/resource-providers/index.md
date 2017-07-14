@@ -1,6 +1,6 @@
 # Resource Providers
 
-Resource providers are not required by json api server but simplify its usage in some cases.
+Resource providers are not required by JSON API server but simplify its usage in some cases.
 
 You have to decide by yourself if resource providers meet your project requirements or if you need a full [request handler](../index.md).
 
@@ -38,14 +38,14 @@ for simpler usage without the need of decisions based on the request.
 ## JSON API Aware
 
 If your instance of `Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface` implements `Enm\JsonApi\JsonApiAwareInterface`
-the json api server will be given as dependency for accessing helper methods for creating new objects.
+the JSON API server will be given as dependency for accessing helper methods for creating new objects.
 
 You should use `Enm\JsonApi\JsonApiAwareTrait` in your class to implement the interface.
 
 ## Usage
 
 If your resource provider does not allow write access to your resources you can use `Enm\JsonApi\Server\ResourceProvider\FetchOnlyTrait`
-in your provider class, which results in a 403 (not allowed) http status if a post, patch or delete is requested.
+in your provider class, which results in a 403 (not allowed) HTTP status if a post, patch or delete is requested.
 
 Relationship requests are handled automatically through a fetch resource request with requested include for the relationship.
 

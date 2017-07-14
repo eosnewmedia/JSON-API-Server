@@ -14,7 +14,7 @@ These methods are provided for optimizing response creation:
 
 | Method                                                 | Return Type           | Description                                                                                                                                                                          |
 |--------------------------------------------------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| originalHttpRequest()                                  | RequestInterface      | Returns the instance (PSR-7) of the original http request.                                                                                                                           |
+| originalHttpRequest()                                  | RequestInterface      | Returns the instance (PSR-7) of the original HTTP request.                                                                                                                           |
 | isMainRequest()                                        | bool                  | Indicates if the current request is the main or a sub request.                                                                                                                       |
 | relationship()                                         | string                | Returns the name of the requested relationship if the main request is a relationship request, otherwise an empty string.                                                             |
 | requestedResourceBody()                                | bool                  | Indicates if the response for this request should contain attributes and relationships                                                                                               |
@@ -78,7 +78,7 @@ These methods are provided for optimizing response creation:
 
 | Method                | Return Type           | Description                                                |
 |-----------------------|-----------------------|------------------------------------------------------------|
-| originalHttpRequest() | RequestInterface      | Returns the instance (PSR-7) of the original http request. |
+| originalHttpRequest() | RequestInterface      | Returns the instance (PSR-7) of the original HTTP request. |
 | fetch()               | FetchRequestInterface | Create a new fetch request from current request            |
 
 Example of usage ("saveResource" in a request handler, which implements `JsonApiAwareInterface`):
@@ -130,7 +130,7 @@ These methods are provided for optimizing response creation:
 
 | Method                | Return Type      | Description                                                |
 |-----------------------|------------------|------------------------------------------------------------|
-| originalHttpRequest() | RequestInterface | Returns the instance (PSR-7) of the original http request. |
+| originalHttpRequest() | RequestInterface | Returns the instance (PSR-7) of the original HTTP request. |
 
 Example of usage ("deleteResource" in a request handler, which implements `JsonApiAwareInterface`):
 
