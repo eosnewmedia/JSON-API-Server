@@ -55,7 +55,7 @@ $requestHandler->addRequestHandler('customResources', new YourCustomRequestHandl
 $jsonApi = new JsonApiServer($requestHandler, '/api');
 
 // create a PSR-7 request from HTTP request
-$request = new Request($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], file_get_contents('php://input'));
+$request = new Request($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], getallheaders(), file_get_contents('php://input'));
 
 // get a PSR-7 response for your PSR-7 request
 $response = $jsonApi->handleHttpRequest($request);
