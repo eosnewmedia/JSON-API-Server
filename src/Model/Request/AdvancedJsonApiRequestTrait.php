@@ -40,7 +40,10 @@ trait AdvancedJsonApiRequestTrait
 
         $isAvailable = count($contentTypeHeader) !== 0;
         if (!$isAvailable || strpos($contentTypeHeader[0], JsonApiInterface::CONTENT_TYPE) === false) {
-            throw new UnsupportedMediaTypeException('Invalid content type: ' . $contentTypeHeader[0]);
+            throw new UnsupportedMediaTypeException(
+                'Invalid content type header: '
+                . $this->originalHttpRequest()->getHeaderLine('Content-Type')
+            );
         }
     }
 
