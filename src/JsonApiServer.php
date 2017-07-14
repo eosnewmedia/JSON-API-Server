@@ -117,17 +117,14 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     public function handleHttpRequest(RequestInterface $request, bool $debug = false): ResponseInterface
     {
         $this->logger()->info($request->getMethod() . ' ' . (string)$request->getUri());
-
-        if ($debug) {
-            $this->logger()->debug(
-                $request->getMethod() . ' ' . (string)$request->getUri(),
-                [
-                    'apiPrefix' => $this->apiPrefix,
-                    'headers' => $request->getHeaders(),
-                    'content' => (string)$request->getBody()
-                ]
-            );
-        }
+        $this->logger()->debug(
+            $request->getMethod() . ' ' . (string)$request->getUri(),
+            [
+                'apiPrefix' => $this->apiPrefix,
+                'headers' => $request->getHeaders(),
+                'content' => (string)$request->getBody()
+            ]
+        );
 
         try {
             switch (strtoupper($request->getMethod())) {
