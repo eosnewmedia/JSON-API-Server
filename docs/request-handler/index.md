@@ -31,6 +31,7 @@ The document created by a request handler will be normalized and transformed int
 | fetchRelationship(FetchRequestInterface $request)        | DocumentInterface | This method must return a multi resource document containing the requested resources, which are the related resources for the given resource (type and id). |
 | saveResource(SaveRequestInterface $request)              | DocumentInterface | This method must return a single resource document containing the resource after it was saved (created or modified).                                        |
 | deleteResource(AdvancedJsonApiRequestInterface $request) | DocumentInterface | This method must return a single resource document containing no resource, because it should be deleted.                                                    |
+| modifyRelationship(SaveRequestInterface $request)        | DocumentInterface | This method must return a document containing all resource identifiers of the relationship after it was modified.                                           |
 
 ## JSON API Aware
 

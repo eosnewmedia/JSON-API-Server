@@ -29,15 +29,18 @@ received document into a HTTP JSON API response.
 
 ## Endpoints
 
-| HTTP-Method | URL-Path (without prefix)                    | Server Action                                                                                          |
-|-------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| GET         | /{type}                                      | The server creates a fetch request and calls method "findResources" of the request handler.            |
-| GET         | /{type}/{id}                                 | The server creates a fetch request and calls method "findResource" of the request handler.             |
-| GET         | /{type}/{id}/relationship/{relationshipName} | The server creates a fetch request and calls method "findRelationship" of the request handler.         |
-| GET         | /{type}/{id}/{relationshipName}              | The server creates a fetch request and calls method "findRelationship" of the request handler.         |
-| POST        | /{type}                                      | The server creates a save request and calls method "saveResource" of the request handler.              |
-| PATCH       | /{type}/{id}                                 | The server creates a save request and calls method "saveResource" of the request handler.              |
-| DELETE      | /{type}/{id}                                 | The server creates a simple JSON API request and calls method "deleteResource" of the request handler. |
+| HTTP-Method | URL-Path (without prefix)                    | Server Action                                                                                                    |
+|-------------|----------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| GET         | /{type}                                      | The server creates a fetch request and calls method "findResources" of the request handler.                      |
+| GET         | /{type}/{id}                                 | The server creates a fetch request and calls method "findResource" of the request handler.                       |
+| GET         | /{type}/{id}/relationship/{relationshipName} | The server creates a fetch request and calls method "findRelationship" of the request handler.                   |
+| GET         | /{type}/{id}/{relationshipName}              | The server creates a fetch request and calls method "findRelationship" of the request handler.                   |
+| POST        | /{type}                                      | The server creates a save request and calls method "saveResource" of the request handler.                        |
+| PATCH       | /{type}/{id}                                 | The server creates a save request and calls method "saveResource" of the request handler.                        |
+| DELETE      | /{type}/{id}                                 | The server creates a simple JSON API request and calls method "deleteResource" of the request handler.           |
+| POST        | /{type}/{id}/relationship/{relationshipName} | The server creates a relationship modification request and calls method "modifyResource" of the request handler. |
+| PATCH       | /{type}/{id}/relationship/{relationshipName} | The server creates a relationship modification request and calls method "modifyResource" of the request handler. |
+| DELETE      | /{type}/{id}/relationship/{relationshipName} | The server creates a relationship modification request and calls method "modifyResource" of the request handler. |
 
 ## Usage
 

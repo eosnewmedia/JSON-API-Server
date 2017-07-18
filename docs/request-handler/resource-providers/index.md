@@ -27,13 +27,14 @@ for simpler usage without the need of decisions based on the request.
 
 `Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface`:
 
-| Method                                                   | Return Type         | Description                              |
-|----------------------------------------------------------|---------------------|------------------------------------------|
-| findResource(FetchRequestInterface $request)             | ResourceInterface   | Find and return the requested resource.  |
-| findResources(FetchRequestInterface $request)            | ResourceInterface[] | Find and return the requested resources. |
-| createResource(SaveRequestInterface $request)            | ResourceInterface   | Create and return the given resource.    |
-| patchResource(SaveRequestInterface $request)             | ResourceInterface   | Patch and return the given resource.     |
-| deleteResource(AdvancedJsonApiRequestInterface $request) | void                | Delete the given resource.               |
+| Method                                                   | Return Type           | Description                                        |
+|----------------------------------------------------------|-----------------------|----------------------------------------------------|
+| findResource(FetchRequestInterface $request)             | ResourceInterface     | Find and return the requested resource.            |
+| findResources(FetchRequestInterface $request)            | ResourceInterface[]   | Find and return the requested resources.           |
+| createResource(SaveRequestInterface $request)            | ResourceInterface     | Create and return the given resource.              |
+| patchResource(SaveRequestInterface $request)             | ResourceInterface     | Patch and return the given resource.               |
+| deleteResource(AdvancedJsonApiRequestInterface $request) | void                  | Delete the given resource.                         |
+| modifyRelationship(SaveRequestInterface $request)        | RelationshipInterface | This method must return the modified relationship. |
 
 ## JSON API Aware
 
@@ -48,6 +49,9 @@ If your resource provider does not allow write access to your resources you can 
 in your provider class, which results in a 403 (not allowed) HTTP status if a post, patch or delete is requested.
 
 Relationship requests are handled automatically through a fetch resource request with requested include for the relationship.
+
+If you do not want to check for the used HTTP method on relationship modification request you can use 
+`Enm\JsonApi\Server\ResourceProvider\SeparatedRelationshipSaveTrait`.
 
 *****
 
