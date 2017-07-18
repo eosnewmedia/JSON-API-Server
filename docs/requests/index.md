@@ -126,6 +126,20 @@ public function saveResource(SaveRequestInterface $request): DocumentInterface
 }
 ```
 
+### Save (modify) Relationships
+
+A relationship modification request also implements `Enm\JsonApi\Model\Request\SaveRequestInterface`.
+
+If HTTP method of the request is "POST" the given resources should be added to the requested relationship.
+
+If HTTP method of the request is "DELETE" the given resources should be removed from the requested relationship.
+
+If HTTP method of the request is "PATCH" the given resources should replace the current resources of the requested relationship.
+
+You can use `Enm\JsonApi\RequestHandler\SeparatedRelationshipSaveTrait` if you do not want to check for the HTTP method by yourself.
+
+In a provider you can use `Enm\JsonApi\ResourceProvider\SeparatedRelationshipSaveTrait`.
+
 ## Delete
 
 A delete request is represented by an instance of `Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface` which extends
