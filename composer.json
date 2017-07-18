@@ -21,17 +21,15 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "symfony/http-foundation": "^2.7|^3.0",
-    "enm/json-api-common": "^1.0"
+    "enm/json-api-common": "^2.0",
+    "psr/http-message": "^1.0",
+    "guzzlehttp/psr7": "^1.0",
+    "psr/log": "^1.0"
   },
   "require-dev": {
-    "symfony/event-dispatcher": "^2.7|^3.0",
     "phpunit/phpunit": "^6.0"
   },
-  "suggest": {
-    "symfony/event-dispatcher": "Allows you to modify or extend functionalities of this library event based."
-  },
   "provide": {
-    "enm/json-api-server-bundle": "^1.0"
+    "enm/json-api-server-bundle": "^2.0"
   }
 }

@@ -3,194 +3,243 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\Model\Request;
 
-use Enm\JsonApi\Server\Model\Request\FetchInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Request;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
 class FetchRequestTest extends TestCase
 {
-
-    public function testFetchRequest()
+    public function testRelationshipRequest()
     {
-        $http = new Request(
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/api/tests/test-1/relationship/example'
+            ),
+            true,
+            '/api'
+        );
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+        self::assertEquals('example', $request->relationship());
+        self::assertFalse($request->requestedResourceBody());
+    }
+
+    public function testRelatedRequest()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/api/tests/test-1/example'
+            ),
+            true,
+            '/api'
+        );
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+        self::assertEquals('example', $request->relationship());
+        self::assertTrue($request->requestedResourceBody());
+    }
+
+    public function testSubRequest()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/api/tests?include=example&fields[tests]=abc&filter[test]=ok&page[offset]=0&sort=abc'
+            ),
+            true,
+            '/api'
+        );
+
+        self::assertTrue($request->isMainRequest());
+
+        $subRequest = $request->subRequest('example');
+
+        self::assertFalse($subRequest->isMainRequest());
+        self::assertTrue($subRequest->filter()->isEmpty());
+        self::assertTrue($subRequest->pagination()->isEmpty());
+        self::assertTrue($subRequest->sorting()->isEmpty());
+        self::assertTrue($subRequest->requestedField('tests', 'abc'));
+        self::assertFalse($subRequest->requestedField('tests', 'def'));
+        self::assertTrue($subRequest->requestedRelationships());
+        self::assertFalse($subRequest->subRequest('test')->requestedRelationships());
+    }
+
+    public function testSubRequestKeepFilter()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/api/tests?include=example&fields[tests]=abc&filter[test]=ok&page[offset]=0&sort=abc'
+            ),
+            true,
+            '/api'
+        );
+
+        self::assertTrue($request->isMainRequest());
+
+        $subRequest = $request->subRequest('example', true);
+
+        self::assertFalse($subRequest->isMainRequest());
+        self::assertEquals('ok', $subRequest->filter()->getOptional('test'));
+        self::assertCount(0, $subRequest->pagination()->all());
+        self::assertCount(0, $subRequest->sorting()->all());
+        self::assertTrue($subRequest->requestedField('tests', 'abc'));
+        self::assertFalse($subRequest->requestedField('tests', 'def'));
+    }
+
+    public function testIncludes()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/api/tests/test-1?include=example,example.relationA.subA'
+            ),
+            true,
+            '/api'
+        );
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+
+        $exampleRequest = $request->subRequest('example');
+        self::assertTrue($exampleRequest->requestedResourceBody());
+        self::assertFalse(
+            $exampleRequest->subRequest('relationA')->requestedResourceBody()
+        );
+        self::assertTrue(
+            $exampleRequest->subRequest('relationA')->subRequest('subA')->requestedResourceBody()
+        );
+    }
+
+    public function testFields()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?fields[tests]=example&fields[examples]='
+            )
+        );
+
+        self::assertTrue($request->requestedField('tests', 'example'));
+        self::assertFalse($request->requestedField('tests', 'example2'));
+        self::assertTrue($request->requestedField('dummies', 'dummy'));
+        self::assertFalse($request->requestedField('examples', 'example'));
+    }
+
+    public function testPagination()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?page[offset]=0'
+            )
+        );
+
+        self::assertEquals(0, $request->pagination()->getRequired('offset'));
+    }
+
+    public function testSorting()
+    {
+        $request = new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?sort=example,-test'
+            )
+        );
+
+        self::assertArraySubset(
             [
-                'fields' => ['test' => 'attrA,attrB'],
-                'include' => 'relationA,relationA.relationB,relationA.relationC',
-                'filter' => ['test' => 'test'],
-                'page' => ['cursor' => 1],
-                'sort' => 'test_a,-test_b',
-            ]
-        );
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-
-        self::assertTrue(
-            $request->shouldIncludeRelationship('relationA')
-        );
-        self::assertFalse(
-            $request->shouldIncludeRelationship('test')
-        );
-        self::assertTrue(
-            $request->shouldContainAttribute('test', 'attrA')
-        );
-        self::assertTrue(
-            $request->shouldContainAttribute('test', 'attrB')
-        );
-        self::assertFalse(
-            $request->shouldContainAttribute('test', 'attr')
-        );
-        self::assertInstanceOf(
-            FetchInterface::class,
-            $request->subRequest('relationA')
-        );
-        self::assertEquals('test_a', $request->sorting()[0]->field());
-        self::assertTrue($request->sorting()[0]->ascending());
-        self::assertEquals('test_b', $request->sorting()[1]->field());
-        self::assertFalse($request->sorting()[1]->ascending());
-        self::assertEquals(1, $request->pagination()->getRequired('cursor'));
-        self::assertEquals('test', $request->filters()->getRequired('test'));
-
-        $subRequest = $request->subRequest('relationA');
-        self::assertFalse(
-            $subRequest->shouldIncludeRelationship('test')
-        );
-        self::assertTrue(
-            $subRequest->shouldContainAttribute('test', 'attrA')
-        );
-        self::assertTrue(
-            $subRequest->shouldContainAttribute('test', 'attrB')
-        );
-        self::assertTrue(
-            $subRequest->shouldContainAttribute('abc', 'attrB')
-        );
-        self::assertFalse(
-            $subRequest->shouldContainAttribute('test', 'attr')
+                'example' => FetchRequestInterface::ORDER_ASC,
+                'test' => FetchRequestInterface::ORDER_DESC,
+            ],
+            $request->sorting()->all()
         );
     }
 
-    public function testFetchRequestManipulation()
+    /**
+     * @expectedException \Enm\JsonApi\Exception\BadRequestException
+     */
+    public function testInvalidPagination()
     {
-        $http = new Request();
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-        self::assertFalse($request->shouldIncludeRelationship('test'));
-        $request->addInclude('test');
-        self::assertTrue($request->shouldIncludeRelationship('test'));
+        new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?page=0'
+            )
+        );
     }
 
-    public function testFetchRequestWithoutHttpRequest()
+    /**
+     * @expectedException \Enm\JsonApi\Exception\BadRequestException
+     */
+    public function testInvalidSorting()
     {
-        $_SERVER['HTTP_CONTENT_TYPE'] = 'application/vnd.api+json';
+        new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?sort[]=example&sort[]=-test'
+            )
+        );
+    }
 
-        $request = new FetchRequest();
-        self::assertFalse($request->shouldIncludeRelationship('test'));
-        self::assertTrue($request->shouldContainAttribute('test',
-            'attr'));
+    /**
+     * @expectedException \Enm\JsonApi\Exception\BadRequestException
+     */
+    public function testInvalidInclude()
+    {
+        new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?include[]=test'
+            )
+        );
+    }
+
+    /**
+     * @expectedException \Enm\JsonApi\Exception\BadRequestException
+     */
+    public function testInvalidFields()
+    {
+        new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?fields=test,test2'
+            )
+        );
+    }
+
+    /**
+     * @expectedException \Enm\JsonApi\Exception\BadRequestException
+     */
+    public function testInvalidFilter()
+    {
+        new FetchRequest(
+            $this->createHttpRequest(
+                'http://example.com/tests?filter=test'
+            )
+        );
     }
 
     /**
      * @expectedException \Enm\JsonApi\Exception\UnsupportedMediaTypeException
      */
-    public function testFetchRequestWithInvalidContentType()
+    public function testInvalidContentType()
     {
-        $_SERVER['HTTP_CONTENT_TYPE'] = 'application/json';
-
-        new FetchRequest();
+        /** @var RequestInterface $httpRequest */
+        $httpRequest = $this->createMock(RequestInterface::class);
+        new FetchRequest($httpRequest);
     }
 
     /**
-     * @expectedException \Enm\JsonApi\Exception\InvalidRequestException
+     * @param string $uriString
+     * @return RequestInterface
      */
-    public function testFetchRequestWithInvalidFields()
+    private function createHttpRequest(string $uriString): RequestInterface
     {
-        $http = new Request();
-        $http->query->set('fields', 'test,attr');
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-        $request->shouldContainAttribute('test', 'attr');
-    }
-
-    public function testFetchRequestCallInvalidRelationship()
-    {
-        $http = new Request();
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-        $subRequest = $request->subRequest('test');
-
-        self::assertFalse($subRequest->shouldIncludeRelationship('test'));
-    }
-
-    public function testFetchRequestWithSubInclude()
-    {
-        $http = new Request(
+        return new Request(
+            'GET',
+            new Uri($uriString),
             [
-                'include' => 'relation.subRelation',
+                'Content-Type' => 'application/vnd.api+json'
             ]
-        );
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-        self::assertFalse($request->shouldIncludeRelationship('relation'));
-        $subRequest = $request->subRequest('relation');
-        self::assertTrue($subRequest->shouldIncludeRelationship('subRelation'));
-    }
-
-
-    public function testFetchRequestShouldContainRelationships()
-    {
-        $http = new Request(
-            [
-                'include' => 'relation.subRelation',
-            ]
-        );
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-
-        self::assertTrue($request->shouldContainRelationships());
-        self::assertTrue($request->subRequest('relation')
-            ->shouldContainRelationships());
-    }
-
-
-    public function testFetchRequestShouldContainsAttribute()
-    {
-        $http = new Request(
-            [
-                'fields' => ['test' => 'test'],
-                'include' => 'relation.subRelation',
-            ]
-        );
-        $http->headers->set('Content-Type', 'application/vnd.api+json');
-
-        $request = new FetchRequest($http);
-
-        self::assertTrue(
-            $request->shouldContainAttribute('test', 'test')
-        );
-        self::assertFalse(
-            $request->shouldContainAttribute('test', 'test2')
-        );
-        self::assertFalse(
-            $request->subRequest('relation')
-                ->shouldContainAttribute('test', 'test2')
-        );
-        self::assertTrue(
-            $request->subRequest('relation')
-                ->shouldContainAttribute('test', 'test')
-        );
-        self::assertFalse(
-            $request->subRequest('relation')
-                ->subRequest('subRelation')
-                ->shouldContainAttribute('test', 'test2')
         );
     }
 }
