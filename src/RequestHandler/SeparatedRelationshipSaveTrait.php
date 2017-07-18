@@ -5,7 +5,7 @@ namespace Enm\JsonApi\Server\RequestHandler;
 
 use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -13,42 +13,39 @@ use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 trait SeparatedRelationshipSaveTrait
 {
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      * @throws BadRequestException
      */
-    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface
+    public function modifyRelationship(SaveRequestInterface $request): DocumentInterface
     {
-        if ($request->requestedAdd()) {
-            return $this->addRelatedResources($request);
-        }
-
-        if ($request->requestedRemove()) {
-            return $this->removeRelatedResources($request);
-        }
-
-        if ($request->requestedReplace()) {
-            return $this->replaceRelatedResources($request);
+        switch (strtoupper($request->originalHttpRequest()->getMethod())) {
+            case 'POST':
+                return $this->addRelatedResources($request);
+            case 'DELETE':
+                return $this->removeRelatedResources($request);
+            case 'PATCH':
+                return $this->replaceRelatedResources($request);
         }
 
         throw new BadRequestException('Invalid relationship modification request!');
     }
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      */
-    abstract protected function replaceRelatedResources(SaveRelationshipRequestInterface $request): DocumentInterface;
+    abstract protected function replaceRelatedResources(SaveRequestInterface $request): DocumentInterface;
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      */
-    abstract protected function addRelatedResources(SaveRelationshipRequestInterface $request): DocumentInterface;
+    abstract protected function addRelatedResources(SaveRequestInterface $request): DocumentInterface;
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      */
-    abstract protected function removeRelatedResources(SaveRelationshipRequestInterface $request): DocumentInterface;
+    abstract protected function removeRelatedResources(SaveRequestInterface $request): DocumentInterface;
 }

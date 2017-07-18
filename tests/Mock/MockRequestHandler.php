@@ -10,8 +10,8 @@ use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\ExceptionTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Server\RequestHandler\NoRelationshipsTrait;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 
 /**
@@ -21,6 +21,7 @@ class MockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterfa
 {
     use JsonApiAwareTrait;
     use ExceptionTrait;
+    use NoRelationshipsTrait;
 
     /**
      * @var bool
@@ -115,14 +116,5 @@ class MockRequestHandler implements RequestHandlerInterface, JsonApiAwareInterfa
     public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface
     {
         return $this->jsonApi()->singleResourceDocument()->withHttpStatus(204);
-    }
-
-    /**
-     * @param SaveRelationshipRequestInterface $request
-     * @return DocumentInterface
-     */
-    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface
-    {
-        return $this->jsonApi()->multiResourceDocument()->withHttpStatus(202);
     }
 }

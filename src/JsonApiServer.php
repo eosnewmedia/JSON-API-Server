@@ -17,7 +17,6 @@ use Enm\JsonApi\Server\Model\Request\FetchRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\RelationshipModificationRequest;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveSingleResourceRequest;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
@@ -103,12 +102,11 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
-     * @return SaveRelationshipRequestInterface
+     * @return SaveRequestInterface
      * @throws JsonApiException
      */
-    protected function saveRelationshipRequestFromHttpRequest(
-        RequestInterface $request
-    ): SaveRelationshipRequestInterface {
+    protected function saveRelationshipRequestFromHttpRequest(RequestInterface $request): SaveRequestInterface
+    {
         return new RelationshipModificationRequest($request, $this->documentDeserializer(), $this->apiPrefix);
     }
 
@@ -223,7 +221,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     {
         if ($this->hasRelationship($request)) {
             $apiRequest = $this->saveRelationshipRequestFromHttpRequest($request);
-            $document = $this->requestHandler()->saveRelationship($apiRequest);
+            $document = $this->requestHandler()->modifyRelationship($apiRequest);
         } else {
             $saveRequest = $this->saveRequestFromHttpRequest($request);
 
@@ -249,7 +247,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     {
         if ($this->hasRelationship($request)) {
             $apiRequest = $this->saveRelationshipRequestFromHttpRequest($request);
-            $document = $this->requestHandler()->saveRelationship($apiRequest);
+            $document = $this->requestHandler()->modifyRelationship($apiRequest);
         } else {
             $apiRequest = $this->apiRequestFromHttpRequest($request);
             if (!$apiRequest->containsId()) {

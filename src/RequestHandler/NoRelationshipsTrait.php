@@ -6,7 +6,7 @@ namespace Enm\JsonApi\Server\RequestHandler;
 use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -24,11 +24,11 @@ trait NoRelationshipsTrait
     }
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return DocumentInterface
      * @throws BadRequestException
      */
-    public function saveRelationship(SaveRelationshipRequestInterface $request): DocumentInterface
+    public function modifyRelationship(SaveRequestInterface $request): DocumentInterface
     {
         throw new BadRequestException(
             'The requested relationship (' . $request->relationship() . ') does not exists.'

@@ -11,7 +11,7 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class RelationshipModificationRequest extends \Enm\JsonApi\Model\Request\RelationshipModificationRequest implements SaveRelationshipRequestInterface
+class RelationshipModificationRequest extends \Enm\JsonApi\Model\Request\RelationshipModificationRequest implements SaveRequestInterface
 {
     use AdvancedJsonApiRequestTrait;
 
@@ -50,30 +50,6 @@ class RelationshipModificationRequest extends \Enm\JsonApi\Model\Request\Relatio
         $document = $documentDeserializer->deserializeDocument($documentData);
 
         parent::__construct($type, $id, $document);
-    }
-
-    /**
-     * @return bool
-     */
-    public function requestedReplace(): bool
-    {
-        return strtoupper($this->originalHttpRequest()->getMethod()) === 'PATCH';
-    }
-
-    /**
-     * @return bool
-     */
-    public function requestedAdd(): bool
-    {
-        return strtoupper($this->originalHttpRequest()->getMethod()) === 'POST';
-    }
-
-    /**
-     * @return bool
-     */
-    public function requestedRemove(): bool
-    {
-        return strtoupper($this->originalHttpRequest()->getMethod()) === 'DELETE';
     }
 
     /**

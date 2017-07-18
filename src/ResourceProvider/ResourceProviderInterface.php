@@ -6,7 +6,6 @@ namespace Enm\JsonApi\Server\ResourceProvider;
 use Enm\JsonApi\Model\Resource\Relationship\RelationshipInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 
@@ -59,8 +58,8 @@ interface ResourceProviderInterface
     public function deleteResource(AdvancedJsonApiRequestInterface $request);
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return RelationshipInterface
      */
-    public function modifyRelationship(SaveRelationshipRequestInterface $request): RelationshipInterface;
+    public function modifyRelationship(SaveRequestInterface $request): RelationshipInterface;
 }

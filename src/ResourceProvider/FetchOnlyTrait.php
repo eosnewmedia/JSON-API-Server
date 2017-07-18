@@ -8,7 +8,6 @@ use Enm\JsonApi\Exception\NotAllowedException;
 use Enm\JsonApi\Model\Resource\Relationship\RelationshipInterface;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 
 /**
@@ -54,11 +53,11 @@ trait FetchOnlyTrait
     }
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return RelationshipInterface
      * @throws JsonApiException
      */
-    public function modifyRelationship(SaveRelationshipRequestInterface $request): RelationshipInterface
+    public function modifyRelationship(SaveRequestInterface $request): RelationshipInterface
     {
         throw new NotAllowedException('You are not allowed to modify the relationship ' . $request->relationship());
     }

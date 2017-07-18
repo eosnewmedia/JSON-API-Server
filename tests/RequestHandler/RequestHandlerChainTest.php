@@ -7,7 +7,6 @@ use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\JsonApiServer;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerChain;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerRegistry;
@@ -190,13 +189,13 @@ class RequestHandlerChainTest extends TestCase
     public function testModifyRelationshipNotAllowed()
     {
         $chain = $this->createChain();
-        /** @var SaveRelationshipRequestInterface $request */
+        /** @var SaveRequestInterface $request */
         $request = $this->createConfiguredMock(
-            SaveRelationshipRequestInterface::class,
+            SaveRequestInterface::class,
             ['type' => 'fetchOnlyTests']
         );
 
-        $chain->saveRelationship($request);
+        $chain->modifyRelationship($request);
     }
 
     /**
@@ -205,13 +204,13 @@ class RequestHandlerChainTest extends TestCase
     public function testModifyRelationshipNotAllowedWithProvider()
     {
         $chain = $this->createChain();
-        /** @var SaveRelationshipRequestInterface $request */
+        /** @var SaveRequestInterface $request */
         $request = $this->createConfiguredMock(
-            SaveRelationshipRequestInterface::class,
+            SaveRequestInterface::class,
             ['type' => 'fetchOnlyExamples']
         );
 
-        $chain->saveRelationship($request);
+        $chain->modifyRelationship($request);
     }
 
     /**

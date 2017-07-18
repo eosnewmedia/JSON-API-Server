@@ -9,17 +9,16 @@ use Enm\JsonApi\JsonApiAwareInterface;
 use Enm\JsonApi\JsonApiAwareTrait;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface;
-use Enm\JsonApi\Server\ResourceProvider\SeparateRelationshipSaveTrait;
+use Enm\JsonApi\Server\ResourceProvider\SeparatedRelationshipSaveTrait;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
 class MockResourceProvider implements ResourceProviderInterface, JsonApiAwareInterface
 {
-    use JsonApiAwareTrait, SeparateRelationshipSaveTrait;
+    use JsonApiAwareTrait, SeparatedRelationshipSaveTrait;
 
     /**
      * Finds a single resource by type and id
@@ -104,10 +103,10 @@ class MockResourceProvider implements ResourceProviderInterface, JsonApiAwareInt
     }
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return RelationshipInterface
      */
-    protected function replaceRelationship(SaveRelationshipRequestInterface $request): RelationshipInterface
+    protected function replaceRelationship(SaveRequestInterface $request): RelationshipInterface
     {
         return $this->jsonApi()->toOneRelationship(
             'replaced',
@@ -116,10 +115,10 @@ class MockResourceProvider implements ResourceProviderInterface, JsonApiAwareInt
     }
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return RelationshipInterface
      */
-    protected function addRelated(SaveRelationshipRequestInterface $request): RelationshipInterface
+    protected function addRelated(SaveRequestInterface $request): RelationshipInterface
     {
         $relationship = $this->jsonApi()->toManyRelationship(
             'added',
@@ -137,10 +136,10 @@ class MockResourceProvider implements ResourceProviderInterface, JsonApiAwareInt
     }
 
     /**
-     * @param SaveRelationshipRequestInterface $request
+     * @param SaveRequestInterface $request
      * @return RelationshipInterface
      */
-    protected function removeRelated(SaveRelationshipRequestInterface $request): RelationshipInterface
+    protected function removeRelated(SaveRequestInterface $request): RelationshipInterface
     {
         $relationship = $this->jsonApi()->toManyRelationship(
             'removed',

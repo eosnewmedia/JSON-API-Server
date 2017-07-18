@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Tests\ResourceProvider;
 
-use Enm\JsonApi\Server\Model\Request\SaveRelationshipRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 use Enm\JsonApi\Server\Tests\Mock\FetchOnlyMockResourceProvider;
 use Enm\JsonApi\Server\Tests\Mock\MockResourceProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -19,15 +20,19 @@ class TraitTest extends TestCase
     public function testInvalidModificationRequest()
     {
         $provider = new MockResourceProvider();
-        /** @var SaveRelationshipRequestInterface $request */
+        /** @var SaveRequestInterface $request */
         $request = $this->createConfiguredMock(
-            SaveRelationshipRequestInterface::class,
+            SaveRequestInterface::class,
             [
-                'requestedAdd' => false,
-                'requestedRemove' => false,
-                'requestedReplace' => false,
+                'originalHttpRequest' => $this->createConfiguredMock(
+                    RequestInterface::class,
+                    [
+                        'getMethod' => 'PUT'
+                    ]
+                )
             ]
         );
+
         $provider->modifyRelationship($request);
     }
 
@@ -37,8 +42,19 @@ class TraitTest extends TestCase
     public function testModificationRequestNotAllowed()
     {
         $provider = new FetchOnlyMockResourceProvider();
-        /** @var SaveRelationshipRequestInterface $request */
-        $request = $this->createMock(SaveRelationshipRequestInterface::class);
+        /** @var SaveRequestInterface $request */
+        $request = $this->createConfiguredMock(
+            SaveRequestInterface::class,
+            [
+                'originalHttpRequest' => $this->createConfiguredMock(
+                    RequestInterface::class,
+                    [
+                        'getMethod' => 'GET'
+                    ]
+                )
+            ]
+        );
+
         $provider->modifyRelationship($request);
     }
 }
