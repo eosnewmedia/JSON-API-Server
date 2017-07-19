@@ -162,7 +162,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
      * @param bool $debug
      * @return ResponseInterface
      */
-    protected function handleException(\Throwable $throwable, bool $debug): ResponseInterface
+    public function handleException(\Throwable $throwable, bool $debug): ResponseInterface
     {
         $this->logger()->error(
             $throwable->getMessage(),
