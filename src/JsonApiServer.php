@@ -353,10 +353,10 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     {
         $statusCodes = [201, 202, 204, 304];
 
-        return !in_array($document->httpStatus(), $statusCodes, true) && (
-                !$document->data()->isEmpty() ||
-                !$document->metaInformation()->isEmpty() ||
-                !$document->errors()->isEmpty()
-            );
+        // if the http response can be empty and no data, meta or errors are contained in the document return false
+        return !in_array($document->httpStatus(), $statusCodes, true) ||
+            !$document->data()->isEmpty() ||
+            !$document->metaInformation()->isEmpty() ||
+            !$document->errors()->isEmpty();
     }
 }
