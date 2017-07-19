@@ -1,4 +1,8 @@
 ## Change Log
+
+### 2.1.0
+* changed method signature of `Enm\JsonApi\Server\JsonApiServer::handleException` to public
+
 ### 2.0.0
 * renamed namespace `Enm\JsonApi\Server\Provider` to `Enm\JsonApi\Server\ResourceProvider`
 * removed method `findRelationship` from `Enm\JsonApi\Server\ResourceProvider\ResourceProviderInterface`
