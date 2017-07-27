@@ -94,10 +94,13 @@ trait AdvancedJsonApiRequestTrait
     protected function pathSegments(): array
     {
         $path = trim($this->originalHttpRequest()->getUri()->getPath(), '/');
-        $prefix = trim($this->apiPrefix, '/');
-        $normalizedPath = trim(ltrim($path, $prefix), '/');
 
-        $segments = explode('/', $normalizedPath);
+        preg_match(
+            '/^(([a-zA-Z0-9\_\-\.\/]+.php)(\/)|)(' . trim($this->apiPrefix, '/') . ')([\/a-zA-Z0-9\_\-]+)$/',
+            $path,
+            $matches
+        );
+        $segments = explode('/', trim($matches[5], '/'));
 
         // fill missing segments
         while (count($segments) < 4) {

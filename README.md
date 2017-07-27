@@ -3,7 +3,7 @@ JSON API Server
 [![Build Status](https://travis-ci.org/eosnewmedia/JSON-API-Server.svg?branch=master)](https://travis-ci.org/eosnewmedia/JSON-API-Server)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/a67be0a4-39d7-4392-94ce-6377d34fe688/mini.png)](https://insight.sensiolabs.com/projects/a67be0a4-39d7-4392-94ce-6377d34fe688)
 
-Abstract server-side php implementation of the [json api specification](http://jsonapi.org/format/), based on the symfony http foundation component.
+Abstract server-side php implementation of the [json api specification](http://jsonapi.org/format/), based on the [PSR-7 HTTP message interface](http://www.php-fig.org/psr/psr-7/).
 
 ## Installation
 
