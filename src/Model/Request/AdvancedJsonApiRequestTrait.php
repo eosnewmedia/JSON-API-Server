@@ -96,7 +96,7 @@ trait AdvancedJsonApiRequestTrait
         $path = trim($this->originalHttpRequest()->getUri()->getPath(), '/');
 
         preg_match(
-            '/^(([a-zA-Z0-9\_\-\.\/]+.php)(\/)|)(' . trim($this->apiPrefix, '/') . ')([\/a-zA-Z0-9\_\-]+)$/',
+            '/^(([a-zA-Z0-9\_\-\.\/]+.php)(\/)|)(' . trim($this->apiPrefix, '/') . ')([\/a-zA-Z0-9\_\-\.]+)$/',
             $path,
             $matches
         );
