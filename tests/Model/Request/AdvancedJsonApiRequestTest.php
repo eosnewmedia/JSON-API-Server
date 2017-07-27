@@ -35,6 +35,43 @@ class AdvancedJsonApiRequestTest extends TestCase
         self::assertTrue($request->onlyIdentifiers());
     }
 
+    public function testRequestWithFrontControllerAndPrefix()
+    {
+        $request = new AdvancedJsonApiRequest(
+            $this->createHttpRequest('http://example.com/app.php/api/tests/test-1'),
+            '/api'
+        );
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+        self::assertFalse($request->isMainRequestRelationshipRequest());
+        self::assertFalse($request->onlyIdentifiers());
+    }
+
+    public function testRequestWithRootPathAndFrontControllerAndPrefix()
+    {
+        $request = new AdvancedJsonApiRequest(
+            $this->createHttpRequest('http://example.com/application/app.php/api/tests/test-1'),
+            '/api'
+        );
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+        self::assertFalse($request->isMainRequestRelationshipRequest());
+        self::assertFalse($request->onlyIdentifiers());
+    }
+
+    public function testRelationshipRequestWithFrontController()
+    {
+        $request = new AdvancedJsonApiRequest($this->createHttpRequest('http://example.com/app_dev.php/tests/test-1/relationship/abc'));
+
+        self::assertEquals('tests', $request->type());
+        self::assertEquals('test-1', $request->id());
+        self::assertTrue($request->isMainRequestRelationshipRequest());
+        self::assertEquals('abc', $request->relationship());
+        self::assertTrue($request->onlyIdentifiers());
+    }
+
     /**
      * @expectedException \Enm\JsonApi\Exception\BadRequestException
      */
