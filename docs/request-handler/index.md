@@ -13,6 +13,7 @@
     1. [JSON API Aware](resource-providers/index.md#json-api-aware)
     1. [Usage](resource-providers/index.md#usage)
 1. [Handler Chain](#handler-chain)
+1. [Pagination](#pagination)
 
 ## Concept
 
@@ -121,6 +122,18 @@ $requestHandler->addRequestHandler($providerHandler); // will be tried if regist
 
 $api = new JsonApiServer($requestHandler);
 ```
+
+## Pagination
+
+You can use the `Enm\JsonApi\Server\Pagination\PaginationTrait` in your Request Handler, to generate pagination links for your document
+based on a pagination link generator (instance of `Enm\JsonApi\Server\Pagination\PaginationLinkGeneratorInterface`).
+
+An instance of `PaginationLinkGeneratorInterface` can be set to your Request Handler through `PaginationTrait::setPaginationLinkGenerator`.
+
+The trait offers the method `paginate` which will call  `PaginationLinkGeneratorInterface::addPaginationLinks`.
+
+These pagination links generators are available, but you can also implement the interface by your self:
+- `OffsetPaginationLinkGenerator`, for offset based pagination (parameters `offset` and, optional, `limit`)
 
 *****
 
