@@ -11,6 +11,12 @@ use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
  */
 interface PaginationLinkGeneratorInterface
 {
+    const SELF_LINK = 'self';
+    const FIRST_LINK = 'first';
+    const PREVIOUS_LINK = 'previous';
+    const NEXT_LINK = 'next';
+    const LAST_LINK = 'last';
+
     /**
      * This method adds all needed pagination links to a document
      *

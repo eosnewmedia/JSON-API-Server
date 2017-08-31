@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\Pagination;
 
+use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
 
@@ -11,31 +12,35 @@ use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
  */
 class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
 {
+    const OFFSET = 'offset';
+    const LIMIT = 'limit';
     /**
      * @var int
      */
-    private $defaultSize;
+    private $defaultLimit;
 
     /**
-     * @param int $defaultSize
+     * @param int $defaultLimit
      */
-    public function __construct($defaultSize)
+    public function __construct(int $defaultLimit)
     {
-        $this->defaultSize = $defaultSize;
+        $this->defaultLimit = $defaultLimit;
     }
 
     /**
      * @param FetchRequestInterface $request
+     *
      * @return int
+     * @throws \Exception
      */
-    protected function size(FetchRequestInterface $request): int
+    protected function limit(FetchRequestInterface $request): int
     {
-        $size = (int)$request->pagination()->getOptional('size', $this->defaultSize);
-        if ($size < 1) {
-            $size = $this->defaultSize;
+        $limit = (int)$request->pagination()->getOptional(self::LIMIT, $this->defaultLimit);
+        if ($limit < 1) {
+            throw new BadRequestException('Invalid pagination limit requested!');
         }
 
-        return $size;
+        return $limit;
     }
 
     /**
@@ -50,9 +55,9 @@ class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
         $uri = $request->originalHttpRequest()->getUri();
         parse_str($uri->getQuery(), $query);
 
-        $query['page']['offset'] = $offset;
-        if ($request->pagination()->has('size')) {
-            $query['page']['size'] = $this->size($request);
+        $query['page'][self::OFFSET] = $offset;
+        if ($request->pagination()->has(self::LIMIT)) {
+            $query['page'][self::LIMIT] = $this->limit($request);
         }
 
         return (string)$uri->withQuery(http_build_query($query));
@@ -70,51 +75,48 @@ class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
      */
     public function addPaginationLinks(DocumentInterface $document, FetchRequestInterface $request, int $resultCount)
     {
-        //pagination links if paginated
-        if (!$request->pagination()->isEmpty()) {
-            $maxOffset = ($resultCount - 1);
+        $maxOffset = ($resultCount - 1);
 
+        $document->links()->createLink(
+            self::SELF_LINK,
+            (string)$request->originalHttpRequest()->getUri()
+        );
+
+        $currentOffset = (int)$request->pagination()->getOptional(self::OFFSET, 0);
+        if ($currentOffset < 0) {
+            throw new BadRequestException('Invalid pagination offset requested!');
+        }
+        $currentSize = $this->limit($request);
+
+        if ($currentOffset !== 0) {
             $document->links()->createLink(
-                'self',
-                (string)$request->originalHttpRequest()->getUri()
+                self::FIRST_LINK,
+                $this->createPaginatedUri($request, 0)
             );
+        }
 
-            $currentOffset = (int)$request->pagination()->getOptional('offset', 0);
-            if ($currentOffset < 0) {
-                $currentOffset = 0;
-            }
-            $currentSize = $this->size($request);
+        $previous = $currentOffset - $currentSize;
+        if ($previous >= 0) {
+            $document->links()->createLink(
+                self::PREVIOUS_LINK,
+                $this->createPaginatedUri($request, $previous)
+            );
+        }
 
-            if ($currentOffset !== 0) {
-                $document->links()->createLink(
-                    'first',
-                    $this->createPaginatedUri($request, 0)
-                );
-            }
+        $next = $currentOffset + $currentSize;
+        if ($next < $maxOffset - $currentOffset) {
+            $document->links()->createLink(
+                self::NEXT_LINK,
+                $this->createPaginatedUri($request, $next)
+            );
+        }
 
-            $previous = $currentOffset - $currentSize;
-            if ($previous >= 0) {
-                $document->links()->createLink(
-                    'previous',
-                    $this->createPaginatedUri($request, $previous)
-                );
-            }
-
-            $next = $currentOffset + $currentSize;
-            if ($next < $maxOffset - $currentOffset) {
-                $document->links()->createLink(
-                    'next',
-                    $this->createPaginatedUri($request, $next)
-                );
-            }
-
-            $last = $maxOffset - $currentSize;
-            if ($last > $currentOffset) {
-                $document->links()->createLink(
-                    'last',
-                    $this->createPaginatedUri($request, $last)
-                );
-            }
+        $last = $maxOffset - $currentSize;
+        if ($last > $currentOffset) {
+            $document->links()->createLink(
+                self::LAST_LINK,
+                $this->createPaginatedUri($request, $last)
+            );
         }
     }
 }
