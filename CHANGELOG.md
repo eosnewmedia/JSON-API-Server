@@ -1,5 +1,10 @@
 ## Change Log
 
+### 2.2.0
+* added `Enm\JsonApi\Server\Pagination\PaginationLinkGeneratorInterface`
+* added `Enm\JsonApi\Server\Pagination\OffsetPaginationLinkGenerator`
+* added `Enm\JsonApi\Server\Pagination\PaginationTrait`
+
 ### 2.1.0
 * changed method signature of `Enm\JsonApi\Server\JsonApiServer::handleException` to public
 
