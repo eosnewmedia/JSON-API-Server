@@ -83,10 +83,10 @@ class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
         );
 
         $currentOffset = (int)$request->pagination()->getOptional(self::OFFSET, 0);
-        if ($currentOffset < 0) {
+        if ($currentOffset < 0 || $currentOffset > $maxOffset) {
             throw new BadRequestException('Invalid pagination offset requested!');
         }
-        $currentSize = $this->limit($request);
+        $limit = $this->limit($request);
 
         if ($currentOffset !== 0) {
             $document->links()->createLink(
@@ -95,23 +95,29 @@ class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
             );
         }
 
-        $previous = $currentOffset - $currentSize;
+        $previous = $currentOffset - $limit;
         if ($previous >= 0) {
             $document->links()->createLink(
                 self::PREVIOUS_LINK,
                 $this->createPaginatedUri($request, $previous)
             );
+        } elseif ($currentOffset !== 0) {
+            $document->links()->createLink(
+                self::PREVIOUS_LINK,
+                $this->createPaginatedUri($request, 0)
+            );
         }
 
-        $next = $currentOffset + $currentSize;
-        if ($next < $maxOffset - $currentOffset) {
+        $last = $resultCount - $limit;
+        $next = $currentOffset + $limit;
+
+        if ($next <= $last) {
             $document->links()->createLink(
                 self::NEXT_LINK,
                 $this->createPaginatedUri($request, $next)
             );
         }
 
-        $last = $maxOffset - $currentSize;
         if ($last > $currentOffset) {
             $document->links()->createLink(
                 self::LAST_LINK,

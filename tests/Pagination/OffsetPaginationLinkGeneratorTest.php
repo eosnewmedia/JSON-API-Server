@@ -42,9 +42,14 @@ class OffsetPaginationLinkGeneratorTest extends TestCase
         self::assertTrue($document->links()->has('next'));
         self::assertTrue($document->links()->has('last'));
 
+
+        $next = new Uri($document->links()->get('next')->href());
+        parse_str($next->getQuery(), $nextQuery);
+        self::assertArraySubset(['page' => ['offset' => 10]], $nextQuery);
+
         $last = new Uri($document->links()->get('last')->href());
         parse_str($last->getQuery(), $lastQuery);
-        self::assertArraySubset(['page' => ['offset' => 89]], $lastQuery);
+        self::assertArraySubset(['page' => ['offset' => 90]], $lastQuery);
     }
 
     public function testAddPaginationLinksWithPaginationQuery()
@@ -58,10 +63,10 @@ class OffsetPaginationLinkGeneratorTest extends TestCase
                 'originalHttpRequest' => $this->createConfiguredMock(
                     RequestInterface::class,
                     [
-                        'getUri' => new Uri('http://example.com/api/tests?page[offset]=9&page[limit]=5')
+                        'getUri' => new Uri('http://example.com/api/tests?page[offset]=10&page[limit]=5')
                     ]
                 ),
-                'pagination' => new KeyValueCollection(['offset' => 9, 'limit' => 5])
+                'pagination' => new KeyValueCollection(['offset' => 10, 'limit' => 5])
             ]
         );
 
@@ -72,6 +77,43 @@ class OffsetPaginationLinkGeneratorTest extends TestCase
         self::assertTrue($document->links()->has('previous'));
         self::assertTrue($document->links()->has('next'));
         self::assertTrue($document->links()->has('last'));
+
+        $first = new Uri($document->links()->get('first')->href());
+        parse_str($first->getQuery(), $firstQuery);
+        self::assertArraySubset(['page' => ['offset' => 0, 'limit' => 5]], $firstQuery);
+
+        $previous = new Uri($document->links()->get('previous')->href());
+        parse_str($previous->getQuery(), $previousQuery);
+        self::assertArraySubset(['page' => ['offset' => 5, 'limit' => 5]], $previousQuery);
+
+        $next = new Uri($document->links()->get('next')->href());
+        parse_str($next->getQuery(), $nextQuery);
+        self::assertArraySubset(['page' => ['offset' => 15, 'limit' => 5]], $nextQuery);
+    }
+
+    public function testAddPaginationLinksWithPaginationPrevious()
+    {
+        $generator = new OffsetPaginationLinkGenerator(10);
+        $document = new Document();
+        /** @var FetchRequestInterface $request */
+        $request = $this->createConfiguredMock(
+            FetchRequestInterface::class,
+            [
+                'originalHttpRequest' => $this->createConfiguredMock(
+                    RequestInterface::class,
+                    [
+                        'getUri' => new Uri('http://example.com/api/tests?page[offset]=10&page[limit]=5')
+                    ]
+                ),
+                'pagination' => new KeyValueCollection(['offset' => 2, 'limit' => 5])
+            ]
+        );
+
+        $generator->addPaginationLinks($document, $request, 100);
+
+        $previous = new Uri($document->links()->get('previous')->href());
+        parse_str($previous->getQuery(), $previousQuery);
+        self::assertArraySubset(['page' => ['offset' => 0, 'limit' => 5]], $previousQuery);
     }
 
     public function testAddPaginationLinksWithPaginationQueryLast()
@@ -85,10 +127,10 @@ class OffsetPaginationLinkGeneratorTest extends TestCase
                 'originalHttpRequest' => $this->createConfiguredMock(
                     RequestInterface::class,
                     [
-                        'getUri' => new Uri('http://example.com/api/tests?page[offset]=89&page[limit]=10')
+                        'getUri' => new Uri('http://example.com/api/tests?page[offset]=90&page[limit]=10')
                     ]
                 ),
-                'pagination' => new KeyValueCollection(['offset' => 89, 'limit' => 10])
+                'pagination' => new KeyValueCollection(['offset' => 90, 'limit' => 10])
             ]
         );
 
