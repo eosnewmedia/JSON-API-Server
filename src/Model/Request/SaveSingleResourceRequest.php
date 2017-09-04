@@ -65,14 +65,15 @@ class SaveSingleResourceRequest extends \Enm\JsonApi\Model\Request\SaveSingleRes
             throw new \InvalidArgumentException('Invalid id given!');
         }
 
+        $originalHttpRequest = $this->originalHttpRequest();
         if (!$this->containsId()) {
-            $this->originalHttpRequest()->withUri(
+            $originalHttpRequest = $this->originalHttpRequest()->withUri(
                 $this->originalHttpRequest()->getUri()->withPath(
                     $this->originalHttpRequest()->getUri()->getPath() . '/' . $id
                 )
             );
         }
 
-        return new FetchRequest($this->originalHttpRequest(), false, $this->apiPrefix);
+        return new FetchRequest($originalHttpRequest, false, $this->apiPrefix);
     }
 }
