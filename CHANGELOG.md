@@ -1,5 +1,8 @@
 ## Change Log
 
+### 2.3.0
+* added `Enm\JsonApi\Server\RequestHandler\FetchRelationshipTrait`
+
 ### 2.2.0
 * added `Enm\JsonApi\Server\Pagination\PaginationLinkGeneratorInterface`
 * added `Enm\JsonApi\Server\Pagination\OffsetPaginationLinkGenerator`
