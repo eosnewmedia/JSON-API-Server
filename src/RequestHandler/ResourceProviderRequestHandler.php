@@ -19,6 +19,7 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
 {
     use JsonApiAwareTrait;
     use SeparatedSaveTrait;
+    use FetchRelationshipTrait;
 
     /**
      * @var ResourceProviderInterface[]
@@ -77,38 +78,6 @@ class ResourceProviderRequestHandler implements RequestHandlerInterface, JsonApi
     public function fetchResources(FetchRequestInterface $request): DocumentInterface
     {
         return $this->jsonApi()->multiResourceDocument($this->resourceProvider($request)->findResources($request));
-    }
-
-    /**
-     * @param FetchRequestInterface $request
-     * @return DocumentInterface
-     * @throws \RuntimeException
-     * @throws UnsupportedTypeException
-     */
-    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface
-    {
-        $request->include($request->relationship());
-
-        $relationship = $this->resourceProvider($request)
-            ->findResource($request)
-            ->relationships()
-            ->get($request->relationship());
-
-        if ($relationship->shouldBeHandledAsCollection()) {
-            $document = $this->jsonApi()->multiResourceDocument($relationship->related()->all());
-        } else {
-            $document = $this->jsonApi()->singleResourceDocument(
-                !$relationship->related()->isEmpty() ? $relationship->related()->first() : null
-            );
-        }
-
-        $document->metaInformation()->mergeCollection($relationship->metaInformation());
-
-        foreach ($relationship->links()->all() as $link) {
-            $document->links()->set($link);
-        }
-
-        return $document;
     }
 
     /**

@@ -67,6 +67,9 @@ class YourRequestHandler implements ResourceHandlerInterface, JsonApiAwareInterf
 }
 ```
 
+If you do not have specific requirements to fetch relationships your request handler can use `Enm\JsonApi\Server\RequestHandler\FetchRelationshipTrait`,
+which implements `fetchRelationship` in a generic way.
+
 ## Handler Registry
 
 The request handler registry (`Enm\JsonApi\Server\RequestHandler\RequestHandlerRegistry`) can be used to add multiple request
