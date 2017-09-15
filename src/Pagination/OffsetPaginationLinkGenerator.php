@@ -75,7 +75,7 @@ class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
      */
     public function addPaginationLinks(DocumentInterface $document, FetchRequestInterface $request, int $resultCount)
     {
-        $maxOffset = ($resultCount - 1);
+        $maxOffset = ($resultCount > 0 ? ($resultCount - 1) : 0);
 
         $document->links()->createLink(
             self::SELF_LINK,
