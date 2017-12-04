@@ -6,12 +6,14 @@ namespace Enm\JsonApi\Server\Model\Request;
 use Enm\JsonApi\Exception\BadRequestException;
 use Enm\JsonApi\Exception\JsonApiException;
 use Enm\JsonApi\Model\Common\KeyValueCollection;
+use Enm\JsonApi\Model\Request\FetchRequestInterface;
 use Psr\Http\Message\RequestInterface;
+use Enm\JsonApi\Server\Model\Request\FetchRequestInterface as ServerFetchRequest;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements FetchRequestInterface
+class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements ServerFetchRequest
 {
     use AdvancedJsonApiRequestTrait;
 
@@ -24,6 +26,11 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      * @var array
      */
     private $includedRelationships = [];
+
+    /**
+     * @var ServerFetchRequest[]
+     */
+    private $subRequests = [];
 
     /**
      * @param RequestInterface $request
@@ -82,7 +89,7 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
             return true;
         }
 
-        return in_array($name, $this->fields()[$type], true);
+        return \in_array($name, $this->fields()[$type], true);
     }
 
     /**
@@ -93,7 +100,24 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     public function requestedRelationships(): bool
     {
-        return $this->requestedResourceBody() || count($this->includes()) > 0;
+        return $this->requestedResourceBody() || \count($this->includes()) > 0;
+    }
+
+    /**
+     * Includes a relationship on this request
+     *
+     * @param string $relationship
+     * @return FetchRequestInterface
+     */
+    public function include(string $relationship): FetchRequestInterface
+    {
+        parent::include ($relationship);
+
+        if (strpos($relationship, '.') === false) {
+            $this->includedRelationships[] = $relationship;
+        }
+
+        return $this;
     }
 
     /**
@@ -102,55 +126,61 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
      */
     public function requestedInclude(string $relationship): bool
     {
-        return in_array($relationship, $this->includedRelationships, true);
+        return \in_array($relationship, $this->includedRelationships, true);
     }
 
     /**
      * Creates a new fetch resource request for the given relationship.
+     * If called twice, the call will return the already created sub request.
      * A sub request does not contain pagination and sorting.
      *
      * @param string $relationship
      * @param boolean $keepFilters
      *
-     * @return FetchRequestInterface
+     * @return ServerFetchRequest
      * @throws \Exception
      */
-    public function subRequest(string $relationship, $keepFilters = false): FetchRequestInterface
+    public function subRequest(string $relationship, $keepFilters = false): ServerFetchRequest
     {
-        $uri = $this->originalHttpRequest()->getUri();
-        parse_str($uri->getQuery(), $originalQuery);
+        $requestKey = $relationship . ($keepFilters ? '-filtered' : '-not-filtered');
+        if (!\array_key_exists($requestKey, $this->subRequests)) {
+            $uri = $this->originalHttpRequest()->getUri();
+            parse_str($uri->getQuery(), $originalQuery);
 
-        $query = new KeyValueCollection($originalQuery);
-        $query->remove('include');
-        $query->remove('sort');
-        $query->remove('page');
-        $query->remove('filter');
+            $query = new KeyValueCollection($originalQuery);
+            $query->remove('include');
+            $query->remove('sort');
+            $query->remove('page');
+            $query->remove('filter');
 
-        if ($keepFilters) {
-            $query->set('filter', $this->filter()->all());
-        }
-
-        $includes = [];
-        foreach ($this->includes() as $include) {
-            if (strpos($include, '.') !== false && strpos($include, $relationship . '.') === 0) {
-                $includes[] = explode('.', $include, 2)[1];
+            if ($keepFilters) {
+                $query->set('filter', $this->filter()->all());
             }
+
+            $includes = [];
+            foreach ($this->includes() as $include) {
+                if (strpos($include, '.') !== false && strpos($include, $relationship . '.') === 0) {
+                    $includes[] = explode('.', $include, 2)[1];
+                }
+            }
+
+            if (\count($includes) > 0) {
+                $query->set('include', implode(',', $includes));
+            }
+
+            $subRequest = new self(
+                $this->originalHttpRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
+                false,
+                $this->apiPrefix
+            );
+
+            $subRequest->originalHttpRequest = $this->originalHttpRequest();
+            $subRequest->onlyIdentifiers = !$this->requestedInclude($relationship);
+
+            $this->subRequests[$requestKey] = $subRequest;
         }
 
-        if (count($includes) > 0) {
-            $query->set('include', implode(',', $includes));
-        }
-
-        $subRequest = new self(
-            $this->originalHttpRequest()->withUri($uri->withQuery(http_build_query($query->all()))),
-            false,
-            $this->apiPrefix
-        );
-
-        $subRequest->originalHttpRequest = $this->originalHttpRequest();
-        $subRequest->onlyIdentifiers = !$this->requestedInclude($relationship);
-
-        return $subRequest;
+        return $this->subRequests[$requestKey];
     }
 
     /**
@@ -163,21 +193,18 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         $query = new KeyValueCollection($uriQuery);
 
         if ($query->has('include')) {
-            if (!is_string($query->getRequired('include'))) {
+            if (!\is_string($query->getRequired('include'))) {
                 throw new \InvalidArgumentException('Invalid include parameter given!');
             }
 
             $includes = explode(',', $query->getRequired('include'));
             foreach ($includes as $include) {
                 $this->include($include);
-                if (strpos($include, '.') === false) {
-                    $this->includedRelationships[] = $include;
-                }
             }
         }
 
         if ($query->has('fields')) {
-            if (!is_array($query->getRequired('fields'))) {
+            if (!\is_array($query->getRequired('fields'))) {
                 throw new \InvalidArgumentException('Invalid fields parameter given!');
             }
             foreach ((array)$query->getRequired('fields') as $type => $fields) {
@@ -188,21 +215,21 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Fe
         }
 
         if ($query->has('filter')) {
-            if (!is_array($query->getRequired('filter'))) {
+            if (!\is_array($query->getRequired('filter'))) {
                 throw new \InvalidArgumentException('Invalid filter parameter given!');
             }
             $this->filter()->merge((array)$query->getRequired('filter'));
         }
 
         if ($query->has('page')) {
-            if (!is_array($query->getRequired('page'))) {
+            if (!\is_array($query->getRequired('page'))) {
                 throw new \InvalidArgumentException('Invalid page parameter given!');
             }
             $this->pagination()->merge((array)$query->getRequired('page'));
         }
 
         if ($query->has('sort')) {
-            if (!is_string($query->getRequired('sort'))) {
+            if (!\is_string($query->getRequired('sort'))) {
                 throw new \InvalidArgumentException('Invalid sort parameter given!');
             }
             foreach (explode(',', $query->getRequired('sort')) as $field) {

@@ -47,6 +47,7 @@ interface FetchRequestInterface extends \Enm\JsonApi\Model\Request\FetchRequestI
 
     /**
      * Creates a new fetch resource request for the given relationship.
+     * If called twice, the call will return the already created sub request.
      * A sub request does not contain pagination and sorting.
      *
      * @param string $relationship
