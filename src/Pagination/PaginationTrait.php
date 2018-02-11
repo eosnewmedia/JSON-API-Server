@@ -41,5 +41,7 @@ trait PaginationTrait
             throw new JsonApiException('Pagination link generator is not available!');
         }
         $this->paginationLinkGenerator->addPaginationLinks($document, $request, $resultCount);
+
+        $document->metaInformation()->set('totalResources', $resultCount);
     }
 }
