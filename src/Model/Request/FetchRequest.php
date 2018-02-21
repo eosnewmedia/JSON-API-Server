@@ -215,10 +215,14 @@ class FetchRequest extends \Enm\JsonApi\Model\Request\FetchRequest implements Se
         }
 
         if ($query->has('filter')) {
-            if (!\is_array($query->getRequired('filter'))) {
+            $filter = $query->getRequired('filter');
+            if(\is_string($filter)) {
+                $filter = json_decode($query->getRequired('filter'), true);
+            }
+            if (!\is_array($filter)) {
                 throw new \InvalidArgumentException('Invalid filter parameter given!');
             }
-            $this->filter()->merge((array)$query->getRequired('filter'));
+            $this->filter()->merge($filter);
         }
 
         if ($query->has('page')) {
