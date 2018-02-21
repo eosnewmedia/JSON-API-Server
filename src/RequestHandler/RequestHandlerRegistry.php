@@ -98,7 +98,7 @@ class RequestHandlerRegistry implements RequestHandlerInterface, JsonApiAwareInt
      */
     public function modifyRelationship(SaveRequestInterface $request): DocumentInterface
     {
-        return $this->requestHandler($request)->deleteResource($request);
+        return $this->requestHandler($request)->modifyRelationship($request);
     }
 
     /**
