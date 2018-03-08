@@ -13,12 +13,12 @@ use Enm\JsonApi\Model\Error\Error;
 use Enm\JsonApi\Model\Resource\ResourceInterface;
 use Enm\JsonApi\Server\Model\ExceptionTrait;
 use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequest;
+use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\FetchRequest;
 use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
 use Enm\JsonApi\Server\Model\Request\RelationshipModificationRequest;
-use Enm\JsonApi\Server\Model\Request\SaveSingleResourceRequest;
 use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Server\Model\Request\SaveSingleResourceRequest;
 use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
@@ -82,6 +82,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return FetchRequestInterface
      * @throws JsonApiException
      */
@@ -92,6 +93,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return SaveRequestInterface
      * @throws JsonApiException
      */
@@ -102,6 +104,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return SaveRequestInterface
      * @throws JsonApiException
      */
@@ -112,6 +115,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return AdvancedJsonApiRequestInterface
      * @throws JsonApiException
      */
@@ -123,17 +127,18 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     /**
      * @param RequestInterface $request
      * @param bool $debug
+     *
      * @return ResponseInterface
      */
     public function handleHttpRequest(RequestInterface $request, bool $debug = false): ResponseInterface
     {
-        $this->logger()->info($request->getMethod() . ' ' . (string)$request->getUri());
+        $this->logger()->info($request->getMethod().' '.(string)$request->getUri());
         $this->logger()->debug(
-            $request->getMethod() . ' ' . (string)$request->getUri(),
+            $request->getMethod().' '.(string)$request->getUri(),
             [
                 'apiPrefix' => $this->apiPrefix,
                 'headers' => $request->getHeaders(),
-                'content' => (string)$request->getBody()
+                'content' => (string)$request->getBody(),
             ]
         );
 
@@ -150,7 +155,9 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
                     return $this->handleDelete($request);
 
                 default:
-                    throw new BadRequestException('Http method "' . $request->getMethod() . '" is not supported by json api!');
+                    throw new BadRequestException(
+                        'Http method "'.$request->getMethod().'" is not supported by json api!'
+                    );
             }
         } catch (\Throwable $e) {
             return $this->handleException($e, $debug);
@@ -160,6 +167,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     /**
      * @param \Throwable $throwable
      * @param bool $debug
+     *
      * @return ResponseInterface
      */
     public function handleException(\Throwable $throwable, bool $debug): ResponseInterface
@@ -170,7 +178,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
                 'file' => $throwable->getFile(),
                 'line' => $throwable->getLine(),
                 'code' => $throwable->getCode(),
-                'trace' => $throwable->getTrace()
+                'trace' => $throwable->getTrace(),
             ]
         );
 
@@ -185,6 +193,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return ResponseInterface
      * @throws JsonApiException
      */
@@ -214,6 +223,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return ResponseInterface
      * @throws JsonApiException
      */
@@ -235,11 +245,13 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
             $document = $this->requestHandler()->saveResource($saveRequest);
         }
+
         return $this->respondWith($document);
     }
 
     /**
      * @param RequestInterface $request
+     *
      * @return ResponseInterface
      * @throws JsonApiException
      */
@@ -262,6 +274,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param RequestInterface $request
+     *
      * @return bool
      */
     protected function hasRelationship(RequestInterface $request): bool
@@ -276,6 +289,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     /**
      * @param ResourceInterface $resource
      * @param FetchRequestInterface $request
+     *
      * @return void
      */
     protected function removeUnrequestedAttributes(ResourceInterface $resource, FetchRequestInterface $request)
@@ -290,6 +304,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
     /**
      * @param ResourceInterface $resource
      * @param FetchRequestInterface $request
+     *
      * @return void
      */
     protected function removeUnrequestedRelationships(ResourceInterface $resource, FetchRequestInterface $request)
@@ -332,21 +347,26 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
 
     /**
      * @param DocumentInterface $document
+     *
      * @return ResponseInterface
      */
     protected function respondWith(DocumentInterface $document): ResponseInterface
     {
         return new Response(
             $document->httpStatus(),
-            [
-                'Content-Type' => self::CONTENT_TYPE
-            ],
+            array_merge(
+                [
+                    'Content-Type' => self::CONTENT_TYPE,
+                ],
+                $document->httpHeaders()
+            ),
             $this->hasResponseBody($document) ? json_encode($this->serializeDocument($document)) : null
         );
     }
 
     /**
      * @param DocumentInterface $document
+     *
      * @return bool
      */
     protected function hasResponseBody(DocumentInterface $document): bool
