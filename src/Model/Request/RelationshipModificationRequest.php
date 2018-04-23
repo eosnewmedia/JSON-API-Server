@@ -37,10 +37,6 @@ class RelationshipModificationRequest extends \Enm\JsonApi\Model\Request\Relatio
             throw new BadRequestException('Missing relationship which should became modified!');
         }
 
-        if (!$this->onlyIdentifiers()) {
-            throw new BadRequestException('Related resources can not be modified by a relationship update!');
-        }
-
         $body = (string)$request->getBody();
         $documentData = $body !== '' ? json_decode($body, true) : [];
         if (json_last_error() !== JSON_ERROR_NONE) {
