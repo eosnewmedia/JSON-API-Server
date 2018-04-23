@@ -283,7 +283,7 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
         $prefix = trim($this->apiPrefix, '/');
         $normalizedPath = trim(ltrim($path, $prefix), '/');
 
-        return substr_count($normalizedPath, '/') > 2;
+        return substr_count($normalizedPath, '/') > 1;
     }
 
     /**

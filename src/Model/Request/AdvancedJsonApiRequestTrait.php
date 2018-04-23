@@ -73,9 +73,9 @@ trait AdvancedJsonApiRequestTrait
      */
     protected function validateContentType()
     {
-        $contentTypeHeader = $this->originalHttpRequest()->getHeader('Content-Type');
+        $contentTypeHeader = (array)$this->originalHttpRequest()->getHeader('Content-Type');
 
-        $isAvailable = count($contentTypeHeader) !== 0;
+        $isAvailable = \count($contentTypeHeader) !== 0;
         if (!$isAvailable || strpos($contentTypeHeader[0], JsonApiInterface::CONTENT_TYPE) === false) {
             throw new UnsupportedMediaTypeException(
                 'Invalid content type header: '
@@ -103,7 +103,7 @@ trait AdvancedJsonApiRequestTrait
         $segments = explode('/', trim($matches[5], '/'));
 
         // fill missing segments
-        while (count($segments) < 4) {
+        while (\count($segments) < 4) {
             $segments[] = '';
         }
 
