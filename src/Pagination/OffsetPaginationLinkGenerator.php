@@ -108,16 +108,16 @@ class OffsetPaginationLinkGenerator implements PaginationLinkGeneratorInterface
             );
         }
 
-        $last = $resultCount - $limit;
         $next = $currentOffset + $limit;
 
-        if ($next <= $last) {
+        if ($next < $resultCount) {
             $document->links()->createLink(
                 self::NEXT_LINK,
                 $this->createPaginatedUri($request, $next)
             );
         }
 
+        $last = $resultCount - $limit;
         if ($last > $currentOffset) {
             $document->links()->createLink(
                 self::LAST_LINK,
