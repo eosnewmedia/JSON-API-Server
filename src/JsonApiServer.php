@@ -319,8 +319,20 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
             foreach ($relationship->related()->all() as $related) {
                 $this->removeUnrequestedAttributes($related, $subRequest);
 
-                if ($shouldIncludeRelationship && !$document->included()->has($related->type(), $related->id())) {
-                    $document->included()->set($related);
+                if ($shouldIncludeRelationship) {
+                    if ($document->included()->has($related->type(), $related->id())) {
+                        $included = $document->included()->get($related->type(), $related->id());
+
+                        if (!$included->relationships()->isEmpty()) {
+                            foreach ($included->relationships()->all() as $relationship) {
+                                $related->relationships()->set($relationship);
+                            }
+                            
+                            $document->included()->set($related);
+                        }
+                    } else {
+                        $document->included()->set($related);
+                    }
                 }
 
                 $this->includeRelated($document, $related, $subRequest);
