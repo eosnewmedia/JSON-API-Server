@@ -327,12 +327,10 @@ class JsonApiServer implements JsonApiInterface, LoggerAwareInterface
                             foreach ($included->relationships()->all() as $relationship) {
                                 $related->relationships()->set($relationship);
                             }
-                            
-                            $document->included()->set($related);
                         }
-                    } else {
-                        $document->included()->set($related);
                     }
+
+                    $document->included()->set($related);
                 }
 
                 $this->includeRelated($document, $related, $subRequest);
