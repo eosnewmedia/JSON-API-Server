@@ -23,7 +23,8 @@ class RelationshipModificationRequestTest extends TestCase
         $deserializer = $this->createDeserializer();
         $request = new RelationshipModificationRequest(
             $this->createHttpRequest(
-                'http://example.com/api/tests/test-1/relationship/abc'
+                'http://example.com/api/tests/test-1/relationship/abc',
+                []
             ),
             $deserializer,
             '/api'
