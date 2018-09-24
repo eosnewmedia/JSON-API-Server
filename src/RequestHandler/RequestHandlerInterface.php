@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace Enm\JsonApi\Server\RequestHandler;
 
-use Enm\JsonApi\Model\Document\DocumentInterface;
-use Enm\JsonApi\Server\Model\Request\FetchRequestInterface;
-use Enm\JsonApi\Server\Model\Request\AdvancedJsonApiRequestInterface;
-use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
+use Enm\JsonApi\Model\Request\RequestInterface;
+use Enm\JsonApi\Model\Response\ResponseInterface;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -14,38 +12,56 @@ use Enm\JsonApi\Server\Model\Request\SaveRequestInterface;
 interface RequestHandlerInterface
 {
     /**
-     * @param FetchRequestInterface $request
-     * @return DocumentInterface
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function fetchResource(FetchRequestInterface $request): DocumentInterface;
+    public function fetchResource(RequestInterface $request): ResponseInterface;
 
     /**
-     * @param FetchRequestInterface $request
-     * @return DocumentInterface
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function fetchResources(FetchRequestInterface $request): DocumentInterface;
+    public function fetchResources(RequestInterface $request): ResponseInterface;
 
     /**
-     * @param FetchRequestInterface $request
-     * @return DocumentInterface
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function fetchRelationship(FetchRequestInterface $request): DocumentInterface;
+    public function fetchRelationship(RequestInterface $request): ResponseInterface;
 
     /**
-     * @param SaveRequestInterface $request
-     * @return DocumentInterface
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function saveResource(SaveRequestInterface $request): DocumentInterface;
+    public function createResource(RequestInterface $request): ResponseInterface;
 
     /**
-     * @param AdvancedJsonApiRequestInterface $request
-     * @return DocumentInterface
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function deleteResource(AdvancedJsonApiRequestInterface $request): DocumentInterface;
+    public function patchResource(RequestInterface $request): ResponseInterface;
 
     /**
-     * @param SaveRequestInterface $request
-     * @return DocumentInterface
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function modifyRelationship(SaveRequestInterface $request): DocumentInterface;
+    public function deleteResource(RequestInterface $request): ResponseInterface;
+
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
+    public function replaceRelatedResources(RequestInterface $request): ResponseInterface;
+
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
+    public function addRelatedResources(RequestInterface $request): ResponseInterface;
+
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
+    public function removeRelatedResources(RequestInterface $request): ResponseInterface;
 }
