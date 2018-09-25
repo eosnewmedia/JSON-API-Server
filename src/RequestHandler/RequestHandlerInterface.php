@@ -51,13 +51,13 @@ interface RequestHandlerInterface
      * @param RequestInterface $request
      * @return ResponseInterface
      */
-    public function replaceRelatedResources(RequestInterface $request): ResponseInterface;
+    public function addRelatedResources(RequestInterface $request): ResponseInterface;
 
     /**
      * @param RequestInterface $request
      * @return ResponseInterface
      */
-    public function addRelatedResources(RequestInterface $request): ResponseInterface;
+    public function replaceRelatedResources(RequestInterface $request): ResponseInterface;
 
     /**
      * @param RequestInterface $request

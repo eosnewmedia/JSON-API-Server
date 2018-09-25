@@ -27,10 +27,6 @@ First you should read the docs at [`enm/json-api-common`](https://eosnewmedia.gi
     1. [Handler Registry](docs/request-handler/index.md#handler-registry)
     1. [Handler Chain](docs/request-handler/index.md#handler-chain)
     1. [Pagination](docs/request-handler/index.md#pagination)
-1. [Requests](docs/requests/index.md)
-    1. [Fetch](docs/requests/index.md#fetch)
-    1. [Save](docs/requests/index.md#save)
-    1. [Delete](docs/requests/index.md#delete)
 1. [Exception handling](docs/exception-handling/index.md)
 
 See [Change Log](CHANGELOG.md) for changes!
