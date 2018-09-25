@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0305fc3727374baedf07d8348b99fa35",
+    "content-hash": "81e6ec52fb79b6f7590027f036056f6b",
     "packages": [
         {
             "name": "enm/json-api-common",
-            "version": "dev-develop",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eosnewmedia/JSON-API-Common.git",
-                "reference": "1a04eaf14bc696b162eb44b0652e7bcdf3366456"
+                "reference": "a996bd1ad15f7bdf45573428adc9d947ba66b2f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eosnewmedia/JSON-API-Common/zipball/1a04eaf14bc696b162eb44b0652e7bcdf3366456",
-                "reference": "1a04eaf14bc696b162eb44b0652e7bcdf3366456",
+                "url": "https://api.github.com/repos/eosnewmedia/JSON-API-Common/zipball/a996bd1ad15f7bdf45573428adc9d947ba66b2f9",
+                "reference": "a996bd1ad15f7bdf45573428adc9d947ba66b2f9",
                 "shasum": ""
             },
             "require": {
@@ -45,7 +45,7 @@
                 }
             ],
             "description": "Basic php implementation (shared structures for client and server) of the json api specification (jsonapi.org)",
-            "time": "2018-09-24T12:53:58+00:00"
+            "time": "2018-09-25T16:57:05+00:00"
         },
         {
             "name": "psr/http-message",
@@ -1510,11 +1510,11 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "enm/json-api-common": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": ">=7.2"
+    },
     "platform-dev": []
 }
