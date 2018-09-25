@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server;
 
 use Enm\JsonApi\Exception\BadRequestException;
+use Enm\JsonApi\Exception\UnsupportedTypeException;
 use Enm\JsonApi\JsonApiTrait;
 use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Model\Error\Error;
@@ -28,27 +29,24 @@ class JsonApiServer
     private $deserializer;
 
     /**
-     * @var RequestHandlerInterface
-     */
-    private $requestHandler;
-
-    /**
      * @var DocumentSerializerInterface
      */
     private $serializer;
 
     /**
-     * @param DocumentDeserializerInterface $deserializer
-     * @param RequestHandlerInterface $requestHandler
-     * @param DocumentSerializerInterface $serializer
+     * @var RequestHandlerInterface[]
+     */
+    private $handlers = [];
+
+    /**
+     * @param DocumentDeserializerInterface|null $deserializer
+     * @param DocumentSerializerInterface|null $serializer
      */
     public function __construct(
-        DocumentDeserializerInterface $deserializer,
-        RequestHandlerInterface $requestHandler,
-        DocumentSerializerInterface $serializer
+        ?DocumentDeserializerInterface $deserializer = null,
+        ?DocumentSerializerInterface $serializer = null
     ) {
         $this->deserializer = $deserializer;
-        $this->requestHandler = $requestHandler;
         $this->serializer = $serializer;
     }
 
@@ -63,9 +61,21 @@ class JsonApiServer
     }
 
     /**
+     * Adds a request handler
+     *
+     * @param string $type
+     * @param RequestHandlerInterface $handler
+     */
+    public function addHandler(string $type, RequestHandlerInterface $handler): void
+    {
+        $this->handlers[$type] = $handler;
+    }
+
+    /**
      * @param RequestInterface $request
      * @return ResponseInterface
      * @throws BadRequestException
+     * @throws UnsupportedTypeException
      */
     public function handleRequest(RequestInterface $request): ResponseInterface
     {
@@ -73,34 +83,34 @@ class JsonApiServer
             case 'GET':
                 if ($request->id()) {
                     if ($request->relationship()) {
-                        $response = $this->requestHandler->fetchRelationship($request);
+                        $response = $this->getHandler($request->type())->fetchRelationship($request);
                         break;
                     }
-                    $response = $this->requestHandler->fetchResource($request);
+                    $response = $this->getHandler($request->type())->fetchResource($request);
                     break;
                 }
-                $response = $this->requestHandler->fetchResources($request);
+                $response = $this->getHandler($request->type())->fetchResources($request);
                 break;
             case 'POST':
                 if ($request->relationship()) {
-                    $response = $this->requestHandler->addRelatedResources($request);
+                    $response = $this->getHandler($request->type())->addRelatedResources($request);
                     break;
                 }
-                $response = $this->requestHandler->createResource($request);
+                $response = $this->getHandler($request->type())->createResource($request);
                 break;
             case 'PATCH':
                 if ($request->relationship()) {
-                    $response = $this->requestHandler->replaceRelatedResources($request);
+                    $response = $this->getHandler($request->type())->replaceRelatedResources($request);
                     break;
                 }
-                $response = $this->requestHandler->patchResource($request);
+                $response = $this->getHandler($request->type())->patchResource($request);
                 break;
             case 'DELETE':
                 if ($request->relationship()) {
-                    $response = $this->requestHandler->removeRelatedResources($request);
+                    $response = $this->getHandler($request->type())->removeRelatedResources($request);
                     break;
                 }
-                $response = $this->requestHandler->deleteResource($request);
+                $response = $this->getHandler($request->type())->deleteResource($request);
                 break;
             default:
                 throw new BadRequestException('Something was wrong...');
@@ -143,6 +153,21 @@ class JsonApiServer
 
         return new DocumentResponse($document, null, $apiError->status());
     }
+
+    /**
+     * @param string $type
+     * @return RequestHandlerInterface
+     * @throws UnsupportedTypeException
+     */
+    private function getHandler(string $type): RequestHandlerInterface
+    {
+        if (!array_key_exists($type, $this->handlers)) {
+            throw new UnsupportedTypeException($type);
+        }
+
+        return $this->handlers[$type];
+    }
+
 
     /**
      * @param DocumentInterface $document

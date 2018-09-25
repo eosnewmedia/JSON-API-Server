@@ -12,6 +12,10 @@
 * removed psr 7 request/response dependency for json api server request and response (of course still possible)
 * removed request and (http)response creation from json api server for more flexibility
 * require request handlers to create full responses (more flexibility)
+* removed \*Only-Traits and implemented No\*-Traits instead
+* removed dependency psr/log
+* updated dependency enm/json-api-common to ^3.0
+* removed request handler registry and moved registry into json api server
 
 ### 2.3.0
 * added `Enm\JsonApi\Server\RequestHandler\FetchRelationshipTrait`

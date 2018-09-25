@@ -7,7 +7,6 @@ use Enm\JsonApi\Model\Document\DocumentInterface;
 use Enm\JsonApi\Serializer\DocumentDeserializerInterface;
 use Enm\JsonApi\Serializer\DocumentSerializerInterface;
 use Enm\JsonApi\Server\JsonApiServer;
-use Enm\JsonApi\Server\RequestHandler\RequestHandlerInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -45,11 +44,9 @@ class JsonApiServerTest extends TestCase
     {
         /** @var DocumentDeserializerInterface $deserializer */
         $deserializer = $this->createMock(DocumentDeserializerInterface::class);
-        /** @var RequestHandlerInterface $requestHandler */
-        $requestHandler = $this->createMock(RequestHandlerInterface::class);
         /** @var DocumentSerializerInterface $serializer */
         $serializer = $this->createMock(DocumentSerializerInterface::class);
 
-        return new JsonApiServer($deserializer, $requestHandler, $serializer);
+        return new JsonApiServer($deserializer, $serializer);
     }
 }
