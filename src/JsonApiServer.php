@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Enm\JsonApi\Server;
 
 use Enm\JsonApi\Exception\BadRequestException;
+use Enm\JsonApi\Exception\UnsupportedMediaTypeException;
 use Enm\JsonApi\Exception\UnsupportedTypeException;
 use Enm\JsonApi\JsonApiTrait;
 use Enm\JsonApi\Model\Document\DocumentInterface;
@@ -76,9 +77,14 @@ class JsonApiServer
      * @return ResponseInterface
      * @throws BadRequestException
      * @throws UnsupportedTypeException
+     * @throws UnsupportedMediaTypeException
      */
     public function handleRequest(RequestInterface $request): ResponseInterface
     {
+        if ($request->headers()->getRequired('Content-Type') !== 'application/vnd.api+json') {
+            throw new UnsupportedMediaTypeException($request->headers()->getRequired('Content-Type'));
+        }
+
         switch ($request->method()) {
             case 'GET':
                 if ($request->id()) {
