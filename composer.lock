@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "enm/json-api-common",
-            "version": "3.0.1",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eosnewmedia/JSON-API-Common.git",
-                "reference": "8db96db2344613fdaba6a8a9933ef8cba483a30e"
+                "reference": "3bdaa2353b3665ca3ff2b596a0722045f2454e8c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eosnewmedia/JSON-API-Common/zipball/8db96db2344613fdaba6a8a9933ef8cba483a30e",
-                "reference": "8db96db2344613fdaba6a8a9933ef8cba483a30e",
+                "url": "https://api.github.com/repos/eosnewmedia/JSON-API-Common/zipball/3bdaa2353b3665ca3ff2b596a0722045f2454e8c",
+                "reference": "3bdaa2353b3665ca3ff2b596a0722045f2454e8c",
                 "shasum": ""
             },
             "require": {
@@ -45,7 +45,7 @@
                 }
             ],
             "description": "Basic php implementation (shared structures for client and server) of the json api specification (jsonapi.org)",
-            "time": "2018-09-27T12:43:31+00:00"
+            "time": "2018-10-04T11:41:50+00:00"
         },
         {
             "name": "psr/http-message",
@@ -520,16 +520,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "6.0.7",
+            "version": "6.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "865662550c384bc1db7e51d29aeda1c2c161d69a"
+                "reference": "848f78b3309780fef7ec8c4666b7ab4e6b09b22f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/865662550c384bc1db7e51d29aeda1c2c161d69a",
-                "reference": "865662550c384bc1db7e51d29aeda1c2c161d69a",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/848f78b3309780fef7ec8c4666b7ab4e6b09b22f",
+                "reference": "848f78b3309780fef7ec8c4666b7ab4e6b09b22f",
                 "shasum": ""
             },
             "require": {
@@ -579,7 +579,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2018-06-01T07:51:50+00:00"
+            "time": "2018-10-04T03:41:23+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
