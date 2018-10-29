@@ -191,11 +191,11 @@ class JsonApiServer
             $shouldIncludeRelationship = $request->requestsInclude($relationship->name());
             $subRequest = $request->createSubRequest($relationship->name(), $resource);
             foreach ($relationship->related()->all() as $related) {
-                if ($shouldIncludeRelationship && !$document->included()->has($related->type(), $related->id())) {
-                    $document->included()->set($related);
+                if ($shouldIncludeRelationship) {
+                    $document->included()->merge($related);
                 }
                 $this->includeRelated($document, $related, $subRequest);
-                $this->cleanUpResource($related, $subRequest);
+                $this->cleanUpResource($document->included()->get($related->type(), $related->id()), $subRequest);
             }
         }
     }

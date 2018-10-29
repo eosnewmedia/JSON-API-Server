@@ -1,5 +1,8 @@
 ## Change Log
 
+### 3.1.0
+* changed "set included" to "merge included"
+
 ### 3.0.0
 * removed pagination and moved it to json api common
 * removed special requests and moved it to json api common
