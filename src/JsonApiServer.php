@@ -193,9 +193,9 @@ class JsonApiServer
             foreach ($relationship->related()->all() as $related) {
                 if ($shouldIncludeRelationship) {
                     $document->included()->merge($related);
+                    $this->cleanUpResource($document->included()->get($related->type(), $related->id()), $subRequest);
                 }
                 $this->includeRelated($document, $related, $subRequest);
-                $this->cleanUpResource($document->included()->get($related->type(), $related->id()), $subRequest);
             }
         }
     }
